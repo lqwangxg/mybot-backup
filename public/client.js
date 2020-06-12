@@ -63,31 +63,24 @@ var Botkit = {
         });
 
     },
-    send: function (text, e) {
+    send: function (msg, e) {
         var that = this;
         if (e) e.preventDefault();
-        if (!text) {
+        if (!msg || !msg.text) {
             return;
         }
-        var message = {
-            type: 'outgoing',
-            text: text
-        };
-
-        this.clearReplies();
         
-        that.deliverMessage({
-            type: 'message',
-            text: text,
-            user: this.guid,
-            channel: this.options.use_sockets ? 'websocket' : 'webhook'
-        });
+        this.clearReplies();
+        msg.user = this.guid;
+        msg.channel = this.options.use_sockets ? 'websocket' : 'webhook'
+        that.deliverMessage(msg);
 
-        that.trigger('sent', message);
+        that.trigger('sent', msg);
 
         return false;
     },
     deliverMessage: function (message) {
+        console.log("deliverMessage===>", message);
         if (this.options.use_sockets) {
             this.socket.send(JSON.stringify(message));
         } else {

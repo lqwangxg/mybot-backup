@@ -38,12 +38,6 @@ const controller = new Botkit({
 // クライアント配列
 controller.botClients = [];
 
-//load customize plugins
-var pluginPath = require("path").join(__dirname, "plugin");
-require("fs").readdirSync(pluginPath).forEach(function(file) {
-  require("./plugin/" + file)(controller); 
-});
-
 if (process.env.CMS_URI) {
     controller.usePlugin(new BotkitCMSHelper({
         uri: process.env.CMS_URI,
@@ -54,8 +48,16 @@ if (process.env.CMS_URI) {
 // Once the bot has booted up its internal services, you can use them to do stuff.
 controller.ready(() => {
 
+    //load customize plugins
+    var pluginPath = require("path").join(__dirname, "plugin");
+    require("fs").readdirSync(pluginPath).forEach(function(file) {
+      require("./plugin/" + file)(controller); 
+    });
+
     // load traditional developer-created local custom feature modules
     controller.loadModules(__dirname + '/features');
+    // load traditional developer-created local custom feature modules
+    controller.loadModules(__dirname + '/skills');
 
     /* catch-all that uses the CMS to trigger dialogs */
     if (controller.plugins.cms) {

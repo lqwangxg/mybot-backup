@@ -348,12 +348,13 @@ a.button:hover {
   font-size: 12px;
   font-weight: bolder;
 }
-.chatbot{
+.bot_say{
   color: blue;
   font-size: 12px;
   font-weight: bolder;
 }
-.chatbot-user{
+.user_say{
+  float: right;
   color: goldenrod;
   font-size: 12px;
   font-weight: bolder;

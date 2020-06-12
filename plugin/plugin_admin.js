@@ -4,14 +4,18 @@ module.exports = function(controller) {
   controller.middleware.receive.use(function(bot, message, next) {
     //受信フラグ
     message.isReceive = true;
-    
+    if(message.text.match(/^clear|cls|クリア|ｸﾘｱ$/i)){
+      return;
+    }
     next();
   });
 
   //送信メッセージをセンターへ転送
   controller.middleware.send.use(function(bot, message, next) {
     message.isSend = true;
-  
+    if((!message.type || message.type==="message") && !message.tranfer){
+      message.type = "bot_say";
+    }
     next();
   });
 

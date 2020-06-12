@@ -20,14 +20,17 @@
             Powered by Botkit
           </div>
           <section>
-              <div id="message_list">
-                  <div id="message_template" >
-                    　
-                  </div>
+            <div v-for="msg in message_list" >
+              <div v-show="msg.isTyping" class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
               </div>
+              <div :class="msg.type">
+                <span>{{msg.type}} {{msg.user}}:<br/> {{msg.text}}</span>
+              </div>
+            </div>
           </section>
-          <div id="message_replies">
-          </div>
           <footer>
             <form >
               <input type="text" autocomplete="off" id="messenger_input" placeholder="Type here..." v-model="inputText" />
@@ -49,15 +52,17 @@
             chatbot: Botkit,
             chat_connected: false,
             inputText:'',
-            messages: []
+            message_list: []
           }
         },
         mounted : function(){
           this.chatbot.element = this;
           this.chatbot.on('disconnected', this.onDisConnected);
           this.chatbot.on('connected', this.onConnected);
+          this.chatbot.on('bot_say', this.onBotSay);
+          this.chatbot.on('user_say', this.onMessageSent);
           this.chatbot.on('sent', this.onMessageSent);
-          this.chatbot.on('sent', this.onMessageSent);
+          
           this.chatbot.connect();
         },
         computed: {
@@ -89,14 +94,25 @@
               type: 'error'
             });
           },
+          onBotSay:function(event, msg){
+            this.message_list.unshift(msg);
+          },
           onMessageSent:function(event, msg){
-            this.$message({
-              message: msg.text
-            });
+            if(msg.text.match(/^clear|cls|クリア|ｸﾘｱ$/i)){
+              this.message_list.length = 0;
+              while(this.message_list.length>0){
+                this.message_list.shift();//削除でクリア
+              }
+            }else{
+              this.message_list.unshift(msg);//頭から追加
+            }
           },
           sendMessage : function(e){
-            Botkit.send(this.inputText, e);
-
+            var message = {
+                type: 'user_say',
+                text: this.inputText
+            };
+            Botkit.send(message, e);          
             this.inputText = '';
           }
         }
