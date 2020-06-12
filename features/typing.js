@@ -28,11 +28,11 @@ module.exports = function(controller) {
 
     controller.addDialog(typing);
 
-    controller.hears('typing dialog', 'message,user_say', async (bot, message) => {
+    controller.hears('typing dialog', 'message', async (bot, message) => {
         await bot.beginDialog('typing');
     });
 
-    controller.hears('typing reply', 'message,user_say', async (bot, message) => {
+    controller.hears('typing reply', 'message', async (bot, message) => {
 
         await bot.reply(message, {type: 'typing'});
         setTimeout(async () => {

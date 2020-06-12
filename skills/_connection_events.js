@@ -1,7 +1,6 @@
 /* This module kicks in if no Botkit Studio token has been provided */
-//const utils = require("../service/utils");
+const utils = require("../service/utils");
 const { BotkitConversation } = require("botkit");
-const util = require('../service/utils');
 
 module.exports = function(controller) {
   
@@ -13,7 +12,7 @@ module.exports = function(controller) {
   
   async function onboarding(bot, message) {
     console.log(`onboarding :${message.type}, ${message.user} `);
-    await bot.reply(message, util.botSay({
+    await bot.reply(message, {
       text:`こんにちは、MBP Smartec ロボです。 `,
       typingDelay: 1000,
       quick_replies: [
@@ -39,7 +38,7 @@ module.exports = function(controller) {
           payload: 'ログイン',
         }
       ]
-    }));
+    });
 
   }
 

@@ -20,7 +20,11 @@
             <el-header>MBPSMARTEC CHATBOT v0.1</el-header>
             <el-container>
             <el-aside width="200px">
-              左側のお知らせ等
+              <h1>左側のお知らせ</h1>
+              <hr>
+              <div v-for="msg in message_list" >
+                <el-alert :title="msg.text" type="success"></el-alert>
+              </div>
             </el-aside>
             <el-main>    
               <section id="section">    
@@ -30,31 +34,35 @@
                     <span></span>
                     <span></span>
                   </div>
-                  <div v-if="msg.type ==='bot_say'">
+                  <div v-if="msg.type === 'message'">
                     <el-row  style="float: left;">
                       <el-col :span="8">
-                        {{msg.type}}
+                        ChatBot:                       
                       </el-col>
                       <el-col :span="16">
                         <div class="grid-content bg-purple-light">
                           <el-alert :title="msg.text" type="success"  :closable="false"></el-alert>
+                          <div v-for="reply in msg.quick_replies" >
+                            <el-button type="primary" plain @click="onQuickReply(reply.payload)">{{ reply.title }}</el-button>
+                          </div>
                         </div>
-                      </el-col>                  
-                    </el-row>                
+                      </el-col>       
+                    </el-row>              
                   </div>
-                  <div v-if="msg.type ==='user_say'" >
+                  <div v-else>
                     <el-row style="float: right;"> 
                       <el-col :span="8" style="float: right;">
-                        {{msg.type}}
+                        {{msg.user? msg.user : 'user'}}:
                       </el-col>
                       <el-col :span="16">
                         <div class="grid-content bg-purple-light">
-                          <el-alert :title="msg.text" type="success"  :closable="false"> 
-                          </el-alert>
+                          <el-alert :title="msg.text" type="success"  :closable="false"></el-alert><br>
+                          <div v-for="reply in msg.quick_replies" >
+                            <el-button type="primary" plain>{{ reply.title }}</el-button>
+                          </div>
                         </div>
-                      </el-col>
-                      
-                    </el-row>                
+                      </el-col>                   
+                    </el-row>      
                   </div>
                 </div> 
               </section>              
@@ -90,8 +98,7 @@
           this.chatbot.element = this;
           this.chatbot.on('disconnected', this.onDisConnected);
           this.chatbot.on('connected', this.onConnected);
-          this.chatbot.on('bot_say', this.onBotSay);
-          this.chatbot.on('user_say', this.onMessageSent);
+          this.chatbot.on('message', this.onReceived);
           this.chatbot.on('sent', this.onMessageSent);
           
           this.chatbot.connect();
@@ -125,7 +132,7 @@
               type: 'error'
             });
           },
-          onBotSay:function(event, msg){
+          onReceived:function(event, msg){
             this.message_list.unshift(msg);
           },
           onMessageSent:function(event, msg){
@@ -137,6 +144,10 @@
             }else{
               this.message_list.unshift(msg);//頭から追加
             }
+          },
+          onQuickReply:function(payload){
+            this.inputText = payload;
+            this.sendMessage();
           },
           sendMessage : function(e){
             var message = {

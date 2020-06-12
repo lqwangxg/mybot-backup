@@ -61,13 +61,6 @@ module.exports = class UtilsService {
     return null;
   }
 
-  static botSay(message){
-    let bot_msg = {};
-    Object.assign(bot_msg, message);
-    bot_msg.type = "bot_say";
-    return bot_msg;
-  }
-  
   static helpDesk(convo, headText){
     let typingDelay = 0;
     if(!headText){

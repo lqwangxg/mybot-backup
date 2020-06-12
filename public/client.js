@@ -80,7 +80,7 @@ var Botkit = {
         return false;
     },
     deliverMessage: function (message) {
-        console.log("deliverMessage===>", message);
+        console.log("deliverMessage To ChatBot===>", message);
         if (this.options.use_sockets) {
             this.socket.send(JSON.stringify(message));
         } else {
@@ -215,7 +215,14 @@ var Botkit = {
                 that.trigger('socket_error', err);
                 return;
             }
-
+            
+            //HTMLに変換
+            //message.text = converter.makeHtml(message.text)
+            //if (message.quick_replies) {
+            //  message.quick_replies = message.quick_replies.map(x => x.payload = converter.makeHtml(x.payload));
+            //}
+            //console.log("received from ChatBot====>", message);
+            
             that.trigger(message.type, message);
         });
     },
