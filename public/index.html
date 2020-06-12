@@ -16,27 +16,58 @@
     <body >
       <div class="wrapper">
         <div id="message_window">
-          <div class="powered_by">
-            Powered by Botkit
-          </div>
-          <section>
-            <div v-for="msg in message_list" >
-              <div v-show="msg.isTyping" class="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <div :class="msg.type">
-                <span>{{msg.type}} {{msg.user}}:<br/> {{msg.text}}</span>
-              </div>
-            </div>
-          </section>
-          <footer>
-            <form >
+          <el-container>
+            <el-header>MBPSMARTEC CHATBOT v0.1</el-header>
+            <el-container>
+            <el-aside width="200px">
+              左側のお知らせ等
+            </el-aside>
+            <el-main>    
+              <section id="section">    
+                <div v-for="msg in message_list" >
+                  <div v-if="msg.isTyping" class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <div v-if="msg.type ==='bot_say'">
+                    <el-row  style="float: left;">
+                      <el-col :span="8">
+                        {{msg.type}}
+                      </el-col>
+                      <el-col :span="16">
+                        <div class="grid-content bg-purple-light">
+                          <el-alert :title="msg.text" type="success"  :closable="false"></el-alert>
+                        </div>
+                      </el-col>                  
+                    </el-row>                
+                  </div>
+                  <div v-if="msg.type ==='user_say'" >
+                    <el-row style="float: right;"> 
+                      <el-col :span="8" style="float: right;">
+                        {{msg.type}}
+                      </el-col>
+                      <el-col :span="16">
+                        <div class="grid-content bg-purple-light">
+                          <el-alert :title="msg.text" type="success"  :closable="false"> 
+                          </el-alert>
+                        </div>
+                      </el-col>
+                      
+                    </el-row>                
+                  </div>
+                </div> 
+              </section>              
+            </el-main>
+          </el-container>
+            <el-footer>
+              <form>
               <input type="text" autocomplete="off" id="messenger_input" placeholder="Type here..." v-model="inputText" />
-              <button @click="sendMessage"> GO </button>
+              <button @click="sendMessage" >Send</button>
+              
             </form>
-          </footer>
+            </el-footer>
+          </el-container>
         </div>
       </div>
       <script src="/client.js"></script>
@@ -118,4 +149,29 @@
         }
       })
     </script>
+
+<style>
+  .el-header, .el-footer {
+    background-color: #B3C0D1;
+    color: #333;
+    text-align: center;
+    line-height: 60px;
+  }
+  
+  .el-aside {
+    background-color: #D3DCE6;
+    color: #333;
+    text-align: center;
+  }
+  
+  .el-main {
+    background-color: #E9EEF3;
+    color: #333;
+    text-align: center;
+    height: 100%;
+  }
+  
+  
+</style>
+
 </html>

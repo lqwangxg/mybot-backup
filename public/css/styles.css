@@ -167,13 +167,13 @@ a.button:hover {
   position: relative;
   top: 2px;
 }
-#message_window section {
+#section {
   flex-grow: 1;
   flex-direction: column-reverse;
   display: flex;
   overflow-y: auto;
 }
-#message_window section div div {
+#section div div {
   margin: 0.25rem;
   clear: both;
 }
@@ -342,31 +342,3 @@ a.button:hover {
 }
 
 /*# sourceMappingURL=styles.css.map */
-
-.guest{
-  color: blue;
-  font-size: 12px;
-  font-weight: bolder;
-}
-.bot_say{
-  color: blue;
-  font-size: 12px;
-  font-weight: bolder;
-}
-.user_say{
-  float: right;
-  color: goldenrod;
-  font-size: 12px;
-  font-weight: bolder;
-}
-.user-chatbot{
-  color: yellowgreen;
-  font-size: 12px;
-  font-weight: bolder;
-}
-.human-user{
-  color: yellowgreen;
-  background-color: indigo;
-  font-size: 12px;
-  font-weight: bolder;
-}
