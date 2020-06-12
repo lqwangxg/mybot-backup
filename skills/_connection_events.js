@@ -1,14 +1,9 @@
 /* This module kicks in if no Botkit Studio token has been provided */
-const utils = require("../service/utils");
-const { BotkitConversation } = require("botkit");
-
 module.exports = function(controller) {
   
   //初回接続、再度接続、途中helpの場合、ヘルプディスクへmessage_received
   controller.on('hello,welcome_back', onboarding);
-  
-  
-  //controller.hears(['help','ヘルプ'], 'message_received', onboarding);
+  controller.hears(['help','ヘルプ'], 'message', onboarding);
   
   async function onboarding(bot, message) {
     console.log(`onboarding :${message.type}, ${message.user} `);

@@ -146,15 +146,11 @@
             }
           },
           onQuickReply:function(payload){
-            this.inputText = payload;
-            this.sendMessage();
+            console.log(payload);
+            this.chatbot.quickReply(payload);
           },
           sendMessage : function(e){
-            var message = {
-                type: 'user_say',
-                text: this.inputText
-            };
-            Botkit.send(message, e);          
+            Botkit.send(this.inputText, e);          
             this.inputText = '';
           }
         }

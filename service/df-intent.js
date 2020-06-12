@@ -1,8 +1,7 @@
 'use strict';
 const uuid = require("uuid");
 
-module.exports = class IntentService {
-  static detectTextIntent(queries, resolve, reject) {
+module.exports = async function detectTextIntent(queries, resolve, reject) {
     // [START dialogflow_detect_intent_text]
     // Imports the Dialogflow library
     const dialogflow = require('dialogflow');
@@ -59,6 +58,8 @@ module.exports = class IntentService {
       return intentResponse;
     }
   
+    return await executeQueries(projectId, sessionId, queries, languageCode);
+    /*
     executeQueries(projectId, sessionId, queries, languageCode).then((v)=>{
       resolve(v);
     }).catch((error)=>{
@@ -66,5 +67,5 @@ module.exports = class IntentService {
       reject(error);
     });
     // [END dialogflow_detect_intent_text]
-  }
+    */
 }

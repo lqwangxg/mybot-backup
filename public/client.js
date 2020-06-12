@@ -63,19 +63,26 @@ var Botkit = {
         });
 
     },
-    send: function (msg, e) {
+    send: function (text, e) {
         var that = this;
         if (e) e.preventDefault();
-        if (!msg || !msg.text) {
+        if (!text) {
             return;
         }
         
-        this.clearReplies();
-        msg.user = this.guid;
-        msg.channel = this.options.use_sockets ? 'websocket' : 'webhook'
-        that.deliverMessage(msg);
+        var message = {
+          type: 'user_say',
+          text: text,
+          user: that.current_user.id,
+          user_profile:  that.current_user,
+          askHuman: that.askHuman,
+          answerUser: that.answerUser,
+          callbackUser: that.callbackUser,
+          channel: this.options.use_sockets ? {type:'socket', id: that.current_user.id } : {type:'webhook', id: that.current_user.id }
+        };
 
-        that.trigger('sent', msg);
+        that.deliverMessage(message);
+        that.trigger('sent', message);
 
         return false;
     },
@@ -115,18 +122,21 @@ var Botkit = {
         });
 
     },
-    connect: function (user) {
+    connect: function (userid) {
 
         var that = this;
-
-        if (user && user.id) {
-            Botkit.setCookie('botkit_guid', user.id, 1);
-
-            user.timezone_offset = new Date().getTimezoneOffset();
-            that.current_user = user;
-            console.log('CONNECT WITH USER', user);
+        if (!userid) {
+          userid = Math.random().toString().substr(2,6);
         }
-
+        
+        //同じ端末に同時に複数のクライアントを接続できるため
+        const cookieID = 'botkit_userid_'+ userid;
+        Botkit.setCookie(cookieID, userid, 1);
+        that.current_user = {
+          id:userid,
+          timezone_offset: new Date().getTimezoneOffset()
+        };
+        
         // connect to the chat server!
         if (that.options.use_sockets) {
             that.connectWebsocket(that.config.ws_url);
@@ -141,8 +151,8 @@ var Botkit = {
             that.guid = Botkit.getCookie('botkit_guid');
             connectEvent = 'welcome_back';
         } else {
-            that.guid = that.generate_guid();
-            Botkit.setCookie('botkit_guid', that.guid, 1);
+          that.guid = that.generate_guid();
+          Botkit.setCookie('botkit_guid', that.guid, 1);
         }
 
         if (this.options.enable_history) {
@@ -154,7 +164,7 @@ var Botkit = {
         that.webhook({
             type: connectEvent,
             user: that.guid,
-            channel: 'webhook',
+            channel: {type:'webhook', id: that.current_user.id } 
         });
 
     },
@@ -167,9 +177,6 @@ var Botkit = {
         if (Botkit.getCookie('botkit_guid')) {
             that.guid = Botkit.getCookie('botkit_guid');
             connectEvent = 'welcome_back';
-        } else {
-            that.guid = that.generate_guid();
-            Botkit.setCookie('botkit_guid', that.guid, 1);
         }
 
         if (this.options.enable_history) {
@@ -183,7 +190,7 @@ var Botkit = {
             that.trigger('connected', event);
             that.deliverMessage({
                 type: connectEvent,
-                user: that.guid,
+                user: that.current_user.id,
                 channel: 'socket',
                 user_profile: that.current_user ? that.current_user : null,
             });
@@ -216,24 +223,11 @@ var Botkit = {
                 return;
             }
             
-            //HTMLに変換
-            //message.text = converter.makeHtml(message.text)
-            //if (message.quick_replies) {
-            //  message.quick_replies = message.quick_replies.map(x => x.payload = converter.makeHtml(x.payload));
-            //}
-            //console.log("received from ChatBot====>", message);
-            
             that.trigger(message.type, message);
         });
     },
-    clearReplies: function () {
-        //this.replies.innerHTML = '';
-    },
     quickReply: function (payload) {
         this.send(payload);
-    },
-    focus: function () {
-        //this.input.focus();
     },
     triggerScript: function (script, thread) {
         this.deliverMessage({
@@ -255,7 +249,7 @@ var Botkit = {
 
         this.deliverMessage({
             type: 'identify',
-            user: this.guid,
+            user: user.id,
             channel: 'socket',
             user_profile: user,
         });
@@ -307,15 +301,6 @@ var Botkit = {
             }
         }
         return "";
-    },
-    generate_guid: function () {
-        function s4() {
-            return Math.floor((1 + Math.random()) * 0x10000)
-                .toString(16)
-                .substring(1);
-        }
-        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-            s4() + '-' + s4() + s4() + s4();
     }
 };
-//module.exports = Botkit;
+

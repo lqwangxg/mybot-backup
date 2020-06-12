@@ -21,9 +21,7 @@ module.exports = function(controller) {
     if(message.text && message.text.match(/^Echo/i)){
       message.sender ="bot";
     }
-    //console.log("send message", message);
-   
-    console.log("controller.middleware.send================from:", message.from);
+    
     next();
   });
 
