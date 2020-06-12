@@ -1,63 +1,105 @@
 <html>
     <head>
-        <title>Botkit Anywhere</title>
+        <title>Botkit On VUE</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js"></script>
         <script src="https://cdn.rawgit.com/showdownjs/showdown/1.7.4/dist/showdown.min.js"></script>
         <link rel="stylesheet" href="/css/styles.css" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- import Vue Element -->
+        <script src="https://unpkg.com/vue/dist/vue.js"></script>
+        <!-- import Vue Element UI -->
+        <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+        
     </head>
     <body >
       <div class="wrapper">
-
         <div id="message_window">
-            <div class="disconnected">
-                Disconnected... reconnecting!
-            </div>
-            <div class="offline">
-                Offline! Reload to reconnect.
-            </div>
-            <div class="powered_by">
-              Powered by <a href="https://botkit.ai" target="_blank" title="Building Blocks for Building Bots"><img src="/botkit_icon.png" width="15" height="15" alt="Botkit Logo" /> Botkit</a>
-            </div>
-            <section>
-                <div id="message_list">
-                    <div id="message_template">
-                        <div class="message {{message.type}}">
-                            {{#if message.isTyping}}
-                              <div class="typing-indicator">
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                              </div>
-                            {{/if}}
-                            {{{message.html}}}
-
-                            {{#if message.open_link}}
-                              <a href="{{{message.open_link}}}" target="_blank" class="button_message">{{#if message.link_title}}{{message.link_title}}{{else}}{{message.open_link}}{{/if}}</a>
-                            {{/if}}
-                        </div>
-                        {{#message.files}}
-                          <div class="file_attachment">
-                          {{#if image}}
-                            <img src="{{{url}}}" alt="{{{url}}}" />
-                          {{else}}
-                            <a href="{{{url}}}" title="{{{url}}}">{{{url}}}</a>
-                          {{/if}}
-                          </div>
-                        {{/message.files}}
-                    </div>
-                </div>
-            </section>
-            <div id="message_replies">
-            </div>
-            <footer>
-                <form onsubmit="Botkit.send(Botkit.input.value, event)">
-                    <input type="text" autocomplete="off" id="messenger_input" placeholder="Type here..." />
-                    <button type="submit">Send</button>
-                </form>
-            </footer>
+          <div class="powered_by">
+            Powered by Botkit
+          </div>
+          <section>
+              <div id="message_list">
+                  <div id="message_template" >
+                    　
+                  </div>
+              </div>
+          </section>
+          <div id="message_replies">
+          </div>
+          <footer>
+            <form >
+              <input type="text" autocomplete="off" id="messenger_input" placeholder="Type here..." v-model="inputText" />
+              <button @click="sendMessage"> GO </button>
+            </form>
+          </footer>
         </div>
-        </div>
-        <script src="/client.js"></script>
+      </div>
+      <script src="/client.js"></script>
     </body>
+
+    <script>
+      
+      //import Botkit from "./"
+      var v = new Vue({
+        el: '#message_window',
+        data: function() {
+          return {
+            chatbot: Botkit,
+            chat_connected: false,
+            inputText:'',
+            messages: []
+          }
+        },
+        mounted : function(){
+          this.chatbot.element = this;
+          this.chatbot.on('disconnected', this.onDisConnected);
+          this.chatbot.on('connected', this.onConnected);
+          this.chatbot.on('sent', this.onMessageSent);
+          this.chatbot.on('sent', this.onMessageSent);
+          this.chatbot.connect();
+        },
+        computed: {
+          connect_comment:()=>{
+            var msg = '';
+            if(this.chat_connected){
+              msg = "接続中。。。";
+            }else{
+              msg = "切断された... 接続をやり直します。";
+            }
+            return msg;
+          }
+        },
+        methods:{
+          onConnected:function(event, msg){
+            this.chat_connected = true;
+            this.$message({
+              message: 'サーバに接続できました。',
+              type: 'success'
+            });
+            this.chatbot.sendEvent({
+              name: 'connected'
+            });
+          },
+          onDisConnected:function(event, msg){
+            this.chat_connected = false;
+            this.$message({
+              message: 'ネットワークが切断されました。',
+              type: 'error'
+            });
+          },
+          onMessageSent:function(event, msg){
+            this.$message({
+              message: msg.text
+            });
+          },
+          sendMessage : function(e){
+            Botkit.send(this.inputText, e);
+
+            this.inputText = '';
+          }
+        }
+      })
+    </script>
 </html>

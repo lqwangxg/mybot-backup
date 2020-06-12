@@ -35,6 +35,14 @@ const controller = new Botkit({
 
     storage
 });
+// クライアント配列
+controller.botClients = [];
+
+//load customize plugins
+var pluginPath = require("path").join(__dirname, "plugin");
+require("fs").readdirSync(pluginPath).forEach(function(file) {
+  require("./plugin/" + file)(controller); 
+});
 
 if (process.env.CMS_URI) {
     controller.usePlugin(new BotkitCMSHelper({

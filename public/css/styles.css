@@ -13,7 +13,6 @@ html {
 }
 
 .wrapper {
-  position: relative;
   max-width: 1000px;
   margin: 0 auto;
 }
@@ -343,3 +342,30 @@ a.button:hover {
 }
 
 /*# sourceMappingURL=styles.css.map */
+
+.guest{
+  color: blue;
+  font-size: 12px;
+  font-weight: bolder;
+}
+.chatbot{
+  color: blue;
+  font-size: 12px;
+  font-weight: bolder;
+}
+.chatbot-user{
+  color: goldenrod;
+  font-size: 12px;
+  font-weight: bolder;
+}
+.user-chatbot{
+  color: yellowgreen;
+  font-size: 12px;
+  font-weight: bolder;
+}
+.human-user{
+  color: yellowgreen;
+  background-color: indigo;
+  font-size: 12px;
+  font-weight: bolder;
+}
