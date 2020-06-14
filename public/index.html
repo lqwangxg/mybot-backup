@@ -100,8 +100,8 @@
           this.chatbot.on('connected', this.onConnected);
           this.chatbot.on('message', this.onReceived);
           this.chatbot.on('sent', this.onMessageSent);
-          
-          this.chatbot.connect();
+          const userid = "user" &  Math.random().toString().substr(2,6);
+          this.chatbot.connect(userid);
         },
         computed: {
           connect_comment:()=>{

@@ -31,7 +31,7 @@ module.exports = function(controller) {
       });
     }else if (message.actionName && message.parameters){
       //映画の情報を取得する
-      const title = utils.getParameterValue(message,"movie");
+      const title = utils.getParameterValue(message, "movie");
       const movie = await getMovieDetail(title);
       
       onMovieBack(movie, bot, message);

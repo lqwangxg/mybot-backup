@@ -4,23 +4,23 @@ module.exports = function(controller) {
   controller.middleware.receive.use(function(bot, message, next) {
     //受信フラグ
     message.isReceive = true;
-    //console.log("receive message", message);
+    console.log("middleware.receive======type/text:", message.type, message.text);
     if(message.text && message.text.match(/^clear|cls|クリア|ｸﾘｱ$/i)){
       return;
     }
-    if(message.type==="user_say"){
-      message.type="message";
-    }
+    // if(message.type==="user_say"){
+    //   message.type="message";
+    // }
     next();
   });
 
   //送信メッセージをセンターへ転送
   controller.middleware.send.use(function(bot, message, next) {
     message.isSend = true;
-    console.log("controller.middleware.send================TEXT:", message.text);
-    if(message.text && message.text.match(/^Echo/i)){
-      message.sender ="bot";
-    }
+    console.log("middleware.send=========type/text:", message.type, message.text);
+    // if(message.text && message.text.match(/^Echo/i)){
+    //   message.sender ="bot";
+    // }
     
     next();
   });

@@ -49,10 +49,12 @@ module.exports = class UtilsService {
       return midParam;
     }
 
-    if(midParam.listValue 
-      && midParam.listValue.values)
+    if(midParam && midParam.listValue)
     {
-      midParam = midParam.listValue.values;
+      midParam = midParam.listValue;
+    }
+    if(midParam && midParam.values){
+      midParam = midParam.values;
     }
 
     if(midParam && midParam[0].stringValue){
