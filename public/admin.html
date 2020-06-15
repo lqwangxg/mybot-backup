@@ -22,10 +22,10 @@
             <el-aside width="200px">
               <h1>{{default_user}} 様 <br>{{greeting}}</h1>
               <hr>
-              <div v-for="ui in online_users" >
-                <el-badge :value="ui.notice.count" :type="ui.notice.type" :hidden="ui.notice.count==0" class="item" >
-                  <el-button size="small" @click="addUserTab(ui.user)"  type="primary">
-                    <i class="el-icon-user"></i> {{ui.user}} 
+              <div v-for="user in online_users" >
+                <el-badge :value="user.notice.warn" :type="getNoticeType(user.notice)" :hidden="user.notice.warn==0" class="item" >
+                  <el-button @click="addUserTab(user.user)" type="primary" plain>
+                    <i class="el-icon-user"></i> {{user.user}} 
                   </el-button>
                 </el-badge>
               </div>
@@ -38,8 +38,7 @@
                   <span slot="label"><i class="el-icon-user"></i> {{item.title}}</span>
 
                   <section class="section">
-                    <div v-for="msg in getUserMessages(item.name)" >
-                      <template v-if="(msg.user === item.name && msg.tranfered) || !msg.tranfered " >
+                    <div v-for="msg in getMessageList(item.name)" >
                       <div v-if="msg.isTyping" class="typing-indicator">
                         <span></span>
                         <span></span>
@@ -75,7 +74,7 @@
                           </el-col>
                         </el-row>      
                       </div>
-                    </template>
+                    
                     </div> 
                   </section>              
                 </el-tab-pane>
@@ -96,7 +95,46 @@
     </body>
 
     <script>
-      
+      class ChatDialog {
+        constructor(user, reply_user, origin_user){
+          this.user = "bot";  //左側は必ずchatbot
+          this.reply_user = user !="bot"? user : reply_user;
+          this.origin_user = origin_user;
+          this.title = origin_user? origin_user:this.reply_user;
+          this.notice = {
+            info :0,
+            warn :0,
+            count: this.info + this.warn,
+            type: this.warn>0? "warning":"primary"
+          }
+          this.message_list = [];
+        }
+
+        isMe(msg){
+          if(this.origin_user){
+            if(msg.origin_user){
+              return this.origin_user === msg.origin_user;
+            }
+            if(typeof(msg)==="string"){
+              return this.origin_user === msg;
+            }
+          }
+          if(this.reply_user){
+            if(msg.reply_user){
+              return this.reply_user === msg.reply_user;
+            }
+            if(msg.user){
+              return this.reply_user === msg.user;
+            }
+            if(typeof(msg)==="string"){
+              return this.reply_user === msg;
+            }
+          }
+          
+          return false;
+        }
+        
+      };
       //import Botkit from "./"
       var v = new Vue({
         el: '#message_window',
@@ -107,9 +145,9 @@
             inputText:'',
             default_user:'',
             active_user:"",
-            user_tabs:[],
             online_users:[],
-            notice_list:[]
+            user_tabs:[],
+            chats:[]
           }
         },
         mounted : function(){
@@ -121,7 +159,15 @@
           this.chatbot.on('message', this.onReceived);
           this.chatbot.on('sent', this.onMessageSent);
           this.default_user ='admin';
-          this.refreshOnlineUser(this.default_user);
+          this.online_users.push({
+                    user : this.default_user,
+                    notice: {
+                      info :0,
+                      warn :0
+                    },
+                    message_list:[]
+                  });
+          this.chats.push(new ChatDialog(this.default_user));
           this.addUserTab(this.default_user);
           this.chatbot.connect(this.default_user);
         },
@@ -164,56 +210,56 @@
           },
           onReceived:function(event, msg){
             if(!msg.user){
-              if(msg.origin_user){
-                msg.user = msg.origin_user;
-              }
+              msg.user = "bot";
             }
-            console.log("onReceived==============", msg);
-            var online_user = this.refreshOnlineUser(msg.user);
-            online_user.message_list.unshift(msg);
+            var found = this.FindUser(msg);
+            found.message_list.unshift(msg);
           },
-          refreshOnlineUser(user){
-            var online_user = this.online_users.find(e=> e.user === user);
-            if(!online_user){
-              online_user = {
-                user: user,
-                notice: {
-                  info :0,
-                  warn :0,
-                  count: this.info + this.warn
-                },
-                message_list:[],
-                type: ()=>{ 
-                  if(this.notice.warn>0) {
-                    return "warning";
-                  }else{
-                    return "primary";
-                  }
+          getNoticeType(notice){
+            return notice.warn>0 ? "warning":"primary";
+          },
+          getMessageList(user){
+            const found = this.online_users.find(u => u.user === user);
+            return found.message_list;
+          },
+          getUserFrom(msg){
+            if(msg.origin_user)return msg.origin_user;
+            if(msg.reply_user && msg.reply_user!="bot" )return msg.reply_user;
+            if(msg.user && msg.user!="bot" )return msg.user;
+            if(typeof(msg)==="string" && msg && msg !="bot" )return msg;
+            return "";
+          },
+          FindUser(msg){
+            var user = this.getUserFrom(msg);
+            if(user){
+                const found = this.online_users.find(u => u.user === user);
+                if(!found){
+                  this.online_users.push({
+                    user : user,
+                    notice: {
+                      info :0,
+                      warn :0
+                    },
+                    message_list:[]
+                  });
                 }
+                return found;
               }
-              this.online_users.push(online_user);
-            }
-            return online_user;
-          },
-          getUserMessages(user){
-            var online_user = this.online_users.find(e=> e.user === user);
-            return online_user.message_list;
+            return null;
           },
           onNotified:function(event, msg){
-            if(msg.event === "online"){
-              var online_user = this.refreshOnlineUser(msg.user);
-              online_user.notice.info++;
-            }
-
-            if(msg.event ==="unknown"){
-              var online_user = this.refreshOnlineUser(msg.origin_user);
-              online_user.notice.warn++;
-
-              if(msg.origin_user && !msg.tranfered){
+            //メッセージ受け取り
+            var found = this.FindUser(msg);
+            if(msg.event === "online"){              
+              //onlineはメッセージ内容なし
+            }else if(msg.event ==="unknown"){
+              //dialog.notice.warn++;
+              if(msg.origin_user && msg.origin_user != msg.reply_user){
                 msg.text ="[" + msg.origin_user + "]様より：" + msg.text;
                 msg.tranfered = true;
               }
-              online_user.message_list.unshift(msg);
+              found.notice.warn++;
+              found.message_list.unshift(msg);
             }
           },
           addUserTab(username) {
@@ -240,8 +286,8 @@
             }
           },
           onMessageSent:function(event, msg){
-            var online_user = this.refreshOnlineUser(msg.user);
-            online_user.message_list.unshift(msg);
+            var found = this.FindUser(msg);
+            found.message_list.unshift(msg);
           },
           onQuickReply:function(payload){
             console.log(payload);
@@ -251,7 +297,8 @@
             var message ={
               text: this.inputText,
               user: this.default_user,
-              reply_user: this.active_user
+              reply_user: "bot",
+              origin_user: this.active_user,
             }
             Botkit.send(message, e);      
             this.inputText = '';

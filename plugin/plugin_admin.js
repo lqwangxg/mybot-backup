@@ -1,39 +1,34 @@
 module.exports = function(controller) {
   
-  //受信メッセージをセンターへ転送
   controller.middleware.receive.use(function(bot, message, next) {
     console.log("middleware.receive======type/text:", message.type, message.text);
-    // if(message.text && message.text.match(/^clear|cls|クリア|ｸﾘｱ$/i)){
-    //   return;
-    // }
-    
-    next();
-  });
-
-  //送信メッセージをセンターへ転送
-  controller.middleware.send.use(function(bot, message, next) {
-    console.log("middleware.send=========type/event/text:", message.type, message.event, message.text);
-    if(!message.user && message.from && message.from.id){
-      message.user = message.from.id;
-    }
-    
-    next();
-  });
-
-  controller.transferMessageToCenter = function(bot, message, callback){
-    if(message.askHuman){
-      //人工応答へ切替は最優先
-    }else{
-      //adminMessageは自身へ転送不要
-      message.transferSkip = message.user.match(/admin/i);
-      if(message.transferSkip){
-        return;
+    //ユーザからの受信メッセージをセンターへ転送
+    if(message.user){
+      if(message.user!="admin"){
+        //ユーザからの情報だけ、センターへ転送、センターからには無視
+        controller.trigger('to_mmc', bot, message);
+      }else if(message.origin_user && message.origin_user !="admin"){
+        //センターからの情報を特定ユーザへ転送
+        controller.trigger('to_user', bot, message);
       }
     }
     
-    //センターへ送信
-    controller.transferMessage (message, "admin", callback); 
-  }
+    next();
+  });
+
+  controller.middleware.send.use(function(bot, message, next) {
+    console.log("middleware.send=========type/event/text:", message.type, message.event, message.text);
+    //ユーザへの送信メッセージをセンターへ転送
+    if(message.reply_user){
+      if(message.reply_user!="admin"){
+        //ユーザへ送る情報をセンターへ転送、センターへ送る情報を既存通り
+        controller.trigger('to_mmc', bot, message);
+      }
+      
+    }
+    
+    next();
+  });
 
   controller.transferMessage = function(message, dest, callback){
     //転送内容がなければ、転送しない

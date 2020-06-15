@@ -53,7 +53,11 @@ module.exports = function(controller) {
 
   // handle the custom event
   controller.on('unknown', async(bot, message) => {
-    tranferToMMC(bot, message);
+    tranferToMMC(bot, message, "warn");
+  });
+  // handle the custom event
+  controller.on('fallback', async(bot, message) => {
+    tranferToUser(bot, message);
   });
 
   async function tranferToMMC(bot, message, event){
@@ -80,19 +84,34 @@ module.exports = function(controller) {
           event: event,
           text: message.text, 
           user: "bot",
+          reply_user: admin.user,
           origin_user: message.user 
         });   
-      }else{
-        admin.bot.say({
+      }else if(event!="online") {
+        bot.say({
           type:"notified",
           event: event,
-          text: "勉強中です。まだ理解できません、よろしくおねがいします。", 
+          text: `「${message.text}」は何の意味でしょうか？教えて下さい。`, 
           user: "bot",
+          reply_user: admin.user,
           origin_user: message.user 
         });  
       }
     }
   }
-
+  async function tranferToUser(bot, message, event){
+    let client = controller.botClients.find(element => message.origin_user === element.user);
+    if(client){
+      if(!event){
+        if(message.event){
+          event = message.event;
+        }else{
+          event = "unknown";
+        }
+      }
+      await client.bot.changeContext(message.reference);
+      client.bot.say(message);   
+    }
+  }
   
 }

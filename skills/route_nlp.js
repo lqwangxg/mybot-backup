@@ -9,7 +9,11 @@ module.exports = function(controller) {
   
   async function onUnknowMessage(bot, message){
     console.log(`onUnknowMessage :${message.type}, ${message.user} `);
-
+    if (message.origin_user && message.user ==="admin" &&  message.user != message.origin_user){
+      //admin ->bot -> user
+      controller.trigger('fallback', bot, message);
+      return;
+    }
     let ret = await detectTextIntent([message.text]);
 
     Object.assign(message, ret);
@@ -36,6 +40,7 @@ module.exports = function(controller) {
         const movie = await getMovieDetail(title);
         onMovieBack(movie, bot, message);
       }else{
+        console.log("unknown===action:", message.actionName);
         controller.trigger('unknown', bot, message);
       }
     }else{
