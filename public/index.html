@@ -134,7 +134,7 @@
             this.chatbot.sendEvent({
               name: 'connected'
             });
-            this.message_list.unshift(message);//頭から追加
+            //this.message_list.unshift(message);//頭から追加
           },
           onDisConnected:function(event, msg){
             this.chat_connected = false;
@@ -161,7 +161,13 @@
             this.chatbot.quickReply(payload);
           },
           sendMessage : function(e){
-            Botkit.send(this.inputText, e);          
+            var message ={
+              text: this.inputText,
+              user: this.userid,
+              reply_user: "bot",
+              origin_user: this.userid,
+            }
+            Botkit.send(message, e);      
             this.inputText = '';
           }
         }
