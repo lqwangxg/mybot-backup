@@ -63,23 +63,24 @@ var Botkit = {
         });
 
     },
-    send: function (text, e) {
+    send: function (msg, e) {
         var that = this;
         if (e) e.preventDefault();
-        if (!text) {
+        if (!msg) {
             return;
+        }
+        if(typeof(msg) ==="string"){
+          msg = {text : msg}
         }
         
         var message = {
           type: 'user_say',
-          text: text,
           user: that.current_user.id,
           user_profile:  that.current_user,
-          askHuman: that.askHuman,
-          answerUser: that.answerUser,
-          callbackUser: that.callbackUser,
           channel: this.options.use_sockets ? {type:'socket', id: that.current_user.id } : {type:'webhook', id: that.current_user.id }
         };
+        
+        Object.assign(message, msg);
 
         that.deliverMessage(message);
         that.trigger('sent', message);

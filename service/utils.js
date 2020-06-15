@@ -60,7 +60,7 @@ module.exports = class UtilsService {
     if(midParam && midParam[0].stringValue){
       return midParam[0].stringValue;
     }
-    return null;
+    return "";
   }
 
   static helpDesk(convo, headText){

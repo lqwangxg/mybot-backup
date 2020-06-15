@@ -2,25 +2,20 @@ module.exports = function(controller) {
   
   //受信メッセージをセンターへ転送
   controller.middleware.receive.use(function(bot, message, next) {
-    //受信フラグ
-    message.isReceive = true;
     console.log("middleware.receive======type/text:", message.type, message.text);
-    if(message.text && message.text.match(/^clear|cls|クリア|ｸﾘｱ$/i)){
-      return;
-    }
-    // if(message.type==="user_say"){
-    //   message.type="message";
+    // if(message.text && message.text.match(/^clear|cls|クリア|ｸﾘｱ$/i)){
+    //   return;
     // }
+    
     next();
   });
 
   //送信メッセージをセンターへ転送
   controller.middleware.send.use(function(bot, message, next) {
-    message.isSend = true;
-    console.log("middleware.send=========type/text:", message.type, message.text);
-    // if(message.text && message.text.match(/^Echo/i)){
-    //   message.sender ="bot";
-    // }
+    console.log("middleware.send=========type/event/text:", message.type, message.event, message.text);
+    if(!message.user && message.from && message.from.id){
+      message.user = message.from.id;
+    }
     
     next();
   });

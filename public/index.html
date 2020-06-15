@@ -20,14 +20,14 @@
             <el-header>MBPSMARTEC CHATBOT v0.1</el-header>
             <el-container>
             <el-aside width="200px">
-              <h1>左側のお知らせ</h1>
+              <h1>{{userid}} 様 <br>{{greeting}}</h1>
               <hr>
-              <div v-for="msg in message_list" >
-                <el-alert :title="msg.text" type="success"></el-alert>
+              <div v-for="n in 5 " >
+                <el-alert type="success">{{n}}回瞬間の思い出</el-alert>
               </div>
             </el-aside>
             <el-main>    
-              <section id="section">    
+              <section class="section">    
                 <div v-for="msg in message_list" >
                   <div v-if="msg.isTyping" class="typing-indicator">
                     <span></span>
@@ -91,6 +91,7 @@
             chatbot: Botkit,
             chat_connected: false,
             inputText:'',
+            userid:'',
             message_list: []
           }
         },
@@ -100,8 +101,8 @@
           this.chatbot.on('connected', this.onConnected);
           this.chatbot.on('message', this.onReceived);
           this.chatbot.on('sent', this.onMessageSent);
-          const userid = "user" &  Math.random().toString().substr(2,6);
-          this.chatbot.connect(userid);
+          this.userid = Math.random().toString().substr(2,6);
+          this.chatbot.connect(this.userid);
         },
         computed: {
           connect_comment:()=>{
@@ -112,18 +113,28 @@
               msg = "切断された... 接続をやり直します。";
             }
             return msg;
+          },
+          greeting: ()=>{
+            const now = new Date();
+            if(now.getHours()<12){
+              return "おはようございます。"
+            }else{
+              return "こんにちは。"
+            }
           }
         },
         methods:{
           onConnected:function(event, msg){
             this.chat_connected = true;
+            const message = this.userid + 'がサーバに接続できました。';
             this.$message({
-              message: 'サーバに接続できました。',
+              message: message,
               type: 'success'
             });
             this.chatbot.sendEvent({
               name: 'connected'
             });
+            this.message_list.unshift(message);//頭から追加
           },
           onDisConnected:function(event, msg){
             this.chat_connected = false;

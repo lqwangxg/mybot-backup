@@ -3,6 +3,7 @@ module.exports = function(controller) {
   
   //初回接続、再度接続、途中helpの場合、ヘルプディスクへmessage_received
   controller.on('hello,welcome_back', onboarding);
+  controller.on('hello,welcome_back', onConnected);
   controller.hears(['help','ヘルプ'], 'message', onboarding);
   
   async function onboarding(bot, message) {
@@ -10,6 +11,7 @@ module.exports = function(controller) {
     await bot.reply(message, {
       text:`こんにちは、MBP Smartec ロボです。 `,
       typingDelay: 1000,
+      reply_user: message.user,
       quick_replies: [
         {
           title: 'iot関連',
@@ -37,4 +39,60 @@ module.exports = function(controller) {
 
   }
 
+  async function onConnected(bot, message){
+    //controller.botClients
+    let client = controller.botClients.find(element => message.user === element.user);
+    //送信先が見つからない場合、飛ばす
+    if(!client){
+      client = {user: message.user, bot: bot, message: message};
+      controller.botClients.push(client);
+    };
+    // 管理センターへお知らせ
+    tranferToMMC(bot, message, "online");
+  }
+
+  // handle the custom event
+  controller.on('unknown', async(bot, message) => {
+    tranferToMMC(bot, message);
+  });
+
+  async function tranferToMMC(bot, message, event){
+    let admin = controller.botClients.find(element => "admin" === element.user);
+    if(!admin){
+      //管理センターはOfflineのため、伝送できません。
+      bot.say("管理センターはOfflineしています、Online後お知らせいたします。");
+      return;
+    }
+
+    let client = controller.botClients.find(element => message.user === element.user);
+    if(client){
+      if(!event){
+        if(message.event){
+          event = message.event;
+        }else{
+          event = "unknown";
+        }
+      }
+      if (client.user != admin.user){
+        await admin.bot.changeContext(admin.message.reference);
+        admin.bot.say({
+          type:"notified",
+          event: event,
+          text: message.text, 
+          user: "bot",
+          origin_user: message.user 
+        });   
+      }else{
+        admin.bot.say({
+          type:"notified",
+          event: event,
+          text: "勉強中です。まだ理解できません、よろしくおねがいします。", 
+          user: "bot",
+          origin_user: message.user 
+        });  
+      }
+    }
+  }
+
+  
 }
