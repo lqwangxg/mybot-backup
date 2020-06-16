@@ -164,8 +164,7 @@
             var message ={
               text: this.inputText,
               user: this.userid,
-              reply_user: "bot",
-              origin_user: this.userid,
+              reply_user: "bot"
             }
             Botkit.send(message, e);      
             this.inputText = '';

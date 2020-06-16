@@ -24,6 +24,7 @@ module.exports = function(controller) {
     // GOOGLE DialogFlowより回答が来た場合、ユーザへ返す
     if(message.fulfillmentText){
       bot.reply(message, {
+        reply_user: message.user,
         text: message.fulfillmentText,
         fulfillmentText: message.fulfillmentText,
         quick_replies: [

@@ -10,7 +10,6 @@ module.exports = function(controller) {
     console.log(`onboarding :${message.type}, ${message.user} `);
     await bot.reply(message, {
       text:`こんにちは、MBP Smartec ロボです。 `,
-      typingDelay: 1000,
       reply_user: message.user,
       quick_replies: [
         {
@@ -53,7 +52,10 @@ module.exports = function(controller) {
 
   // handle the custom event
   controller.on('unknown', async(bot, message) => {
-    tranferToMMC(bot, message, "warn");
+    tranferToMMC(bot, message, "unknown");
+  });
+  controller.on('known', async(bot, message) => {
+    tranferToMMC(bot, message, "known");
   });
   // handle the custom event
   controller.on('fallback', async(bot, message) => {
@@ -64,7 +66,10 @@ module.exports = function(controller) {
     let admin = controller.botClients.find(element => "admin" === element.user);
     if(!admin){
       //管理センターはOfflineのため、伝送できません。
-      bot.say("管理センターはOfflineしています、Online後お知らせいたします。");
+      bot.say({
+        text:"管理センターはOfflineしています、Online後お知らせいたします。",
+        reply_user: message.user
+      });
       return;
     }
 
@@ -99,6 +104,7 @@ module.exports = function(controller) {
       }
     }
   }
+
   async function tranferToUser(bot, message, event){
     let client = controller.botClients.find(element => message.origin_user === element.user);
     if(client){
@@ -109,8 +115,8 @@ module.exports = function(controller) {
           event = "unknown";
         }
       }
-      await client.bot.changeContext(message.reference);
-      client.bot.say(message);   
+      await client.bot.changeContext(client.message.reference);
+      client.bot.say(message.text);
     }
   }
   
