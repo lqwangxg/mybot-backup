@@ -5,7 +5,7 @@ const getMovieDetail = require("../service/movie");
 module.exports = function(controller) {
 
   //ユーザからのメッセージを解析
-  controller.on('user_say,message',  onUnknowMessage);
+  controller.on('user_say,message,text',  onUnknowMessage);
   
   async function onUnknowMessage(bot, message){
     console.log(`onUnknowMessage :${message.type}, ${message.user} `);
@@ -76,7 +76,7 @@ module.exports = function(controller) {
 
   //センターからのメッセージを解析、基本は転送するだけ。
   //controller.hears('.*', 'message_received', function(bot, message) {
-  controller.on('message', function(bot, message) {
+  controller.on('message,text', function(bot, message) {
     //センターの場合、処理終了
     if(!message.user.match(/admin/i)) return;
 

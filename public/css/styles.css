@@ -172,7 +172,7 @@ a.button:hover {
   flex-direction: column-reverse;
   display: flex;
   overflow-y: scroll;
-  height: 800px;
+  height: 500px;
 }
 .section div div {
   margin: 0.25rem;

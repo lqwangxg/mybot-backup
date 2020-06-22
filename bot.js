@@ -61,7 +61,7 @@ controller.ready(() => {
 
     /* catch-all that uses the CMS to trigger dialogs */
     if (controller.plugins.cms) {
-        controller.on('message,direct_message', async (bot, message) => {
+        controller.on('message,direct_message,text', async (bot, message) => {
             let results = false;
             results = await controller.plugins.cms.testTrigger(bot, message);
 

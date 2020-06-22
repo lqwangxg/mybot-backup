@@ -49,10 +49,10 @@ module.exports = function(controller) {
   
  
   controller.addDialog(convo);
-  controller.hears(/^iot関連$/, 'message,user_say', async function(bot, message) {
+  controller.hears(/^iot関連$/, 'message,user_say,text', async function(bot, message) {
     await bot.beginDialog('iot');
   });
-
+  
   /*
 
   // set up community thread

@@ -4,11 +4,12 @@ module.exports = function(controller) {
   //初回接続、再度接続、途中helpの場合、ヘルプディスクへmessage_received
   controller.on('hello,welcome_back', onboarding);
   controller.on('hello,welcome_back', onConnected);
-  controller.hears(['help','ヘルプ'], 'message', onboarding);
+  controller.hears(['help','ヘルプ'], ['message','text'], onboarding);
   
   async function onboarding(bot, message) {
     console.log(`onboarding :${message.type}, ${message.user} `);
     await bot.reply(message, {
+      type:"message",
       text:`こんにちは、MBP Smartec ロボです。 `,
       reply_user: message.user,
       quick_replies: [
@@ -67,7 +68,7 @@ module.exports = function(controller) {
     if(!admin){
       //管理センターはOfflineのため、伝送できません。
       bot.say({
-        text:"管理センターはOfflineしています、Online後お知らせいたします。",
+        text:"人工対応時間外ですが、Chatbotには２４時間対応させていただきます。",
         reply_user: message.user
       });
       return;
