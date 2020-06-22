@@ -2,7 +2,7 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License.
  */
-const express = require('express');
+//const express = require('express');
 const path = require('path');
 
 module.exports = function(controller) {

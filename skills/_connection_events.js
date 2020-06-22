@@ -2,15 +2,15 @@
 module.exports = function(controller) {
   
   //初回接続、再度接続、途中helpの場合、ヘルプディスクへmessage_received
-  controller.on('hello,welcome_back', onboarding);
-  controller.on('hello,welcome_back', onConnected);
-  controller.hears(['help','ヘルプ'], ['message','text'], onboarding);
+  //controller.on('hello,welcome_back', onboarding);
+  // controller.on('hello,welcome_back', onConnected);
+  // controller.hears(['help','ヘルプ'], ['message','text'], onboarding);
   
   async function onboarding(bot, message) {
     console.log(`onboarding :${message.type}, ${message.user} `);
     await bot.reply(message, {
       type:"message",
-      text:`こんにちは、MBP Smartec ロボです。 `,
+      text:`ようこそ！MBPSmartecのボットです。なんでも大丈夫、僕とチャットしましょう！`,
       reply_user: message.user,
       quick_replies: [
         {

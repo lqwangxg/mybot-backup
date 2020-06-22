@@ -1,0 +1,44 @@
+{
+  "adapter": [
+    "default",
+    "Web Adapter",
+    "websocket",
+    "webhook",
+    "line"
+  ],
+  "hears": [
+    {
+      "keywords": ["hello","welcome_back","help"],
+      "events": [
+        "message",
+        "user_say",
+        "text",
+        "hello",
+        "welcome_back"
+      ],
+      "replys": [
+        {
+          "text": [
+            "ようこそ！MBPSmartecのボットです。なんでも大丈夫、僕とチャットしましょう！",
+            "まずは、お名前を教えていただけませんか？"
+          ],
+          "quick_replies": [
+            {
+              "title": "Hello",
+              "payload": "hello",
+              "content_type": "text"
+            },
+            {
+              "title": "挨拶",
+              "payload": "挨拶",
+              "content_type": "text"
+            }
+          ]
+        },
+        {
+          "text": "まずは、お名前を教えていただけませんか？"
+        }
+      ]
+    }
+  ]
+}

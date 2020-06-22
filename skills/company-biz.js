@@ -1,5 +1,4 @@
 /* This module kicks in if no Botkit Studio token has been provided */
-const utils = require("../service/utils");
 const { BotkitConversation } = require("botkit");
 module.exports = function(controller) {
 
