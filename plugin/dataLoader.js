@@ -50,6 +50,15 @@ module.exports = async function (controller) {
       return;
     }
     if(!qa.keywords){
+      if(Array.isArray(qa.keywords)){
+        qa.keywords = qa.keywords.map(key=>{
+          if(key.match(/^\/.+\/$/i)){
+            return new RegExp(key);
+          }else{
+            return key;
+          }
+        })
+      }
       controller.hears(qa.keywords, qa.events, async function(bot, message) {
         //await bot.beginDialog('iot');
         await replyMessage(bot, message, qa.replys);
@@ -60,9 +69,8 @@ module.exports = async function (controller) {
         await replyMessage(bot, message, qa.replys);
       });
     }
-     
   }
-
+  
   async function replyMessage(bot, message, replys){
     if(!replys){
       return;

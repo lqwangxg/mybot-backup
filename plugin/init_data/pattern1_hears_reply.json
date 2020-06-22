@@ -8,7 +8,7 @@
   ],
   "hears": [
     {
-      "keywords": ["hello","welcome_back","help"],
+      "keywords": ["hello","welcome_back"],
       "events": [
         "message",
         "user_say",
@@ -24,19 +24,65 @@
           ],
           "quick_replies": [
             {
-              "title": "Hello",
-              "payload": "hello",
+              "title": "はい",
+              "payload": "はい",
               "content_type": "text"
             },
             {
-              "title": "挨拶",
-              "payload": "挨拶",
+              "title": "ちょっと見るだけ",
+              "payload": "見るだけ",
               "content_type": "text"
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "keywords": ["help","ヘルプ", "/問[い]?合[せ]?/"],
+      "events": [
+        "message",
+        "user_say",
+        "text",
+        "hello",
+        "welcome_back"
+      ],
+      "replys": [
         {
-          "text": "まずは、お名前を教えていただけませんか？"
+          "text": [
+            "どうぞ、ご用件を聞かせてください。"
+          ]
+        }
+      ]
+    },
+    {
+      "keywords": ["御社の強み","貴社の強み"],
+      "events": [
+        "message",
+        "user_say",
+        "text"
+      ],
+      "replys": [
+        {
+          "text": [
+            "以下の項目を選び頂きます。"
+          ],
+          "quick_replies": [
+            {
+              "title": "iot",
+              "payload": "iot",
+              "content_type": "text"
+            },
+            {
+              "title": "big data",
+              "payload": "bigdata",
+              "content_type": "text"
+            },
+            {
+              "title": "広域物流ソリューション",
+              "payload": "広域物流",
+              "content_type": "text"
+            }
+          ]
         }
       ]
     }
