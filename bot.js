@@ -51,7 +51,9 @@ controller.ready(() => {
     //load customize plugins
     var pluginPath = require("path").join(__dirname, "plugin");
     require("fs").readdirSync(pluginPath).forEach(function(file) {
-      require("./plugin/" + file)(controller); 
+      if(file!="init_data"){
+        require("./plugin/" + file)(controller); 
+      }
     });
 
     // load traditional developer-created local custom feature modules
