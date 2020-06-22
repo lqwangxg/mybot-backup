@@ -16,7 +16,7 @@ module.exports = function(controller) {
     }
     console.log("middleware.receive=========type/event/text/user/reply_user/origin_user:", 
     message.type, message.event, message.text, message.user, message.reply_user, message.origin_user);
-    console.log("receive ==========message", message);
+    //console.log("receive ==========message", message);
     
     next();
   });
@@ -34,7 +34,7 @@ module.exports = function(controller) {
     }
     console.log("middleware.send=========type/event/text/user/reply_user/origin_user:", 
     message.type, message.event, message.text, message.user, message.reply_user, message.origin_user);
-    console.log("send ==========message", message);
+    //console.log("send ==========message", message);
     
     next();
   });
