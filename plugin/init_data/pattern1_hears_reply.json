@@ -8,43 +8,24 @@
   ],
   "hears": [
     {
-      "keywords": ["hello","welcome_back"],
       "events": [
-        "message",
-        "user_say",
-        "text",
         "hello",
         "welcome_back"
       ],
       "replys": [
         {
-          "text": [
-            "ようこそ！MBPSmartecのボットです。なんでも大丈夫、僕とチャットしましょう！",
-            "まずは、お名前を教えていただけませんか？"
-          ],
-          "quick_replies": [
-            {
-              "title": "はい",
-              "payload": "はい",
-              "content_type": "text"
-            },
-            {
-              "title": "ちょっと見るだけ",
-              "payload": "見るだけ",
-              "content_type": "text"
-            }
-          ]
+          "text":
+            "ようこそ！MBPSmartecのボットです。なんでも大丈夫、僕とチャットしましょう！"
         }
-      ]
+      ],
+      "dialog":"confirm_userinfo"
     },
     {
       "keywords": ["help","ヘルプ", "/問[い]?合[せ]?/"],
       "events": [
         "message",
         "user_say",
-        "text",
-        "hello",
-        "welcome_back"
+        "text"
       ],
       "replys": [
         {
@@ -86,5 +67,81 @@
         }
       ]
     }
+  ],
+  "dialogs":[
+    {
+      "name":"confirm_userinfo",
+      "confirms":[
+        { 
+          "type": "ask", 
+          "text": "先に、お名前を教えていただけませんか？", 
+          "quick_replies": [
+            {
+              "title": "はい",
+              "payload": "はい",
+              "content_type": "text"
+            },
+            {
+              "title": "ちょっと見るだけ",
+              "payload": "見るだけ",
+              "content_type": "text"
+            }
+          ],
+          "params": "name", 
+          "trimWords":"です|でござる",
+          "handlers":[
+            {
+              "type":"text",
+              "pattern":"はい",
+              "thread_name":"question_mail"
+            },
+            {
+              "default":"true",
+              "thread_name":""
+            }
+          ]
+        },
+        { 
+          "type": "action",
+          "action":"confirm",
+          "thread_name": "question_mail"
+        },
+        {
+          "type": "question", 
+          "text": "メールアドレスを教えていただけませんか？",
+          "params": "mail",
+          "handlers":[
+            {
+              "type":"regex",
+              "pattern":"[a-zA-Z]+[\\w\\.\\-]*@[a-zA-Z]+[\\w\\.\\-]*[a-zA-Z]+",
+              "thread_name":"question_tel"
+            },
+            {
+              "default":"true",
+              "thread_name":""
+            }
+          ],
+          "thread_name":"question_mail"
+        },
+        {
+          "type": "question", 
+          "text": "お電話番号を教えていただけませんか？",
+          "params": "tel",
+          "handlers":[
+            {
+              "type":"regex",
+              "pattern":"[\\d]+[\\d\\-]*[\\d]+",
+              "thread_name":"question_tel"
+            },
+            {
+              "default":"true",
+              "thread_name":""
+            }
+          ],
+          "thread_name":"question_tel"
+        }
+      ]
+    }
   ]
+
 }

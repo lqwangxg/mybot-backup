@@ -15,10 +15,6 @@ module.exports = function(controller) {
 
   convo.addAction('next_question');
   
-  // set up docs threads
-  convo.addMessage({
-    text: '{{vars.name}}様、 [Iot案例資料 ](http://112.126.67.102:30006/news/)',
-  },'iot_docs');
   convo.addQuestion('ご質問の内容は何でしょうか？', async(resp, convo, bot)=>{
     console.log('新質問：', resp);
   },'new_question','next_question');

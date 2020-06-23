@@ -1,6 +1,7 @@
 'use strict';
 
 let fs = require("fs");
+const { BotkitConversation } = require("botkit");
 
 module.exports = async function (controller) {
 
@@ -39,8 +40,84 @@ module.exports = async function (controller) {
       return;
     }
     //console.log('json====================>', json.hears);
+    //Conversation Dialog Regist
+    if(json.dialogs && Array.isArray(json.dialogs)){
+      json.dialogs.forEach(dialog=> registDilaog(controller, dialog));
+    }
+
     if(json.hears && Array.isArray(json.hears)){
       json.hears.forEach(qa => hearsQA(controller, qa));
+    }
+
+  }
+  async function registDilaog(controller, dialog){
+    if(!dialog.name || !dialog.confirms){
+      return; 
+    }
+    let convo = new BotkitConversation(dialog.name, controller);
+    dialog.confirms.forEach(confirm=>addConfirm(convo, confirm));
+    controller.addDialog(convo);
+  }
+  async function addConfirm(convo, confirm){
+    if(confirm.type==="ask"){
+      if(Array.isArray(confirm.handlers)){
+        let handlers =[];
+        confirm.handlers.forEach(handler=>{
+          convertHandler(handler);
+          console.log("addConfirm------>handler:", handler)
+          handlers.push(handler);
+        });
+        
+        convo.ask({
+          text:confirm.text,
+          quick_replies:confirm.quick_replies
+        }, handlers, confirm.params)
+
+      }else{
+        convertHandler(confirm.handlers);
+        convo.ask({
+          text:confirm.text,
+          quick_replies:confirm.quick_replies
+        }, confirm.handlers, confirm.params)
+      }
+      
+    }else if(confirm.type==="question"){
+      if(Array.isArray(confirm.handlers)){
+        let handlers =[];
+        confirm.handlers.forEach(handler=>{
+          convertHandler(handler);
+          console.log("addConfirm------>handler:", handler)
+          handlers.push(handler);
+        });
+        
+        convo.addQuestion({
+          text:confirm.text,
+          quick_replies:confirm.quick_replies
+        }, handlers, confirm.params, confirm.thread_name)
+
+      }else{
+        convertHandler(confirm.handlers);
+        convo.addQuestion({
+          text:confirm.text,
+          quick_replies:confirm.quick_replies
+        }, confirm.handlers, confirm.params, confirm.thread_name);
+      }
+    }else if(confirm.type==="action"){
+      if(confirm.thread_name){
+        convo.addAction(confirm.action,confirm.thread_name);
+      }else{
+        convo.addAction(confirm.action);
+      }
+    }
+  }
+  async function convertHandler(handler){
+    if(handler.type==="regex" && handler.pattern){
+      handler.pattern = new RegExp(handler.pattern);
+    }
+    if(handler.thread_name){
+      handler.handler = async(response, convo, bot) => {
+        await convo.gotoThread(handler.thread_name);
+      }
     }
   }
 
@@ -61,12 +138,21 @@ module.exports = async function (controller) {
       }
       controller.hears(qa.keywords, qa.events, async function(bot, message) {
         //await bot.beginDialog('iot');
-        await replyMessage(bot, message, qa.replys);
+        if(qa.replys){
+          await replyMessage(bot, message, qa.replys);
+        }
+        if(qa.dialog){
+          await bot.beginDialog(qa.dialog);
+        }
       });
     }else{
       controller.on(qa.events, async function(bot, message) {
-        //await bot.beginDialog('iot');
-        await replyMessage(bot, message, qa.replys);
+        if(qa.replys){
+          await replyMessage(bot, message, qa.replys);
+        }
+        if(qa.dialog){
+          await bot.beginDialog(qa.dialog);
+        }
       });
     }
   }
@@ -97,8 +183,6 @@ module.exports = async function (controller) {
       });
       return;
     }
-    
-
     
   }
 
