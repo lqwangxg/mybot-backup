@@ -1,0 +1,21 @@
+{
+  "adapter": [
+    "default",
+    "Web Adapter"
+  ],
+  "description": "初回接続、また再接続場合の挨拶文",
+  "type": "on",
+  "script": {
+    "events": [
+      "hello",
+      "welcome_back"
+    ],
+    "replys": [
+      {
+        "text":
+          "ようこそ！MBPSmartecのボットです。なんでも大丈夫、僕とチャットしましょう！"
+      }
+    ],
+    "dialog":"confirm_userinfo"
+  }
+}

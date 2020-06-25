@@ -1,0 +1,386 @@
+{
+  "adapter": [
+    "default",
+    "Web Adapter"
+  ],
+  "description": "お客様情報を取得用ダイアログ",
+  "type": "dialog",
+  "id":"confirm_userinfo",
+  "script":[
+    { 
+      "topic": "default",
+      "type": "ask", 
+      "text": "先ず、お名前を教えていただけませんか？", 
+      "quick_replies": [
+        {
+          "title": "はい",
+          "payload": "はい",
+          "content_type": "text"
+        },
+        {
+          "title": "匿名",
+          "payload": "匿名",
+          "content_type": "text"
+        }
+      ],
+      "collect":{
+        "key": "username",
+        "options":[
+          {
+            "type": "string",
+            "pattern":"はい",
+            "action":"question_username"
+          },
+          {
+            "type": "string",
+            "default":"true",
+            "pattern": "default",
+            "action":"default"
+          }
+        ]
+      }
+    },
+    {"type": "comment", "data":"====================================="},
+    { 
+      "type": "action",
+      "action":"question_content"
+    },
+    {"type": "comment", "data":"====================================="},
+    { 
+      "type": "question",
+      "text":"「姓　名」の形でご入力をお願い致します。例：桃　太郎",
+      "collect":{
+        "key": "username",
+        "options":[
+          {
+            "type":"regex",
+            "pattern":".+\\s+.+",
+            "action":"question_username_confirm"
+          },
+          {
+            "default":"true",
+            "pattern": "default",
+            "action":"question_username"
+          }
+        ]
+      },
+      "thread_name":"question_username"
+    },
+    {"type": "comment", "data":"====================================="},
+    { 
+      "type": "action",
+      "action":"question_username_confirm",
+      "thread_name":"question_username"
+    },
+    {
+      "type": "question", 
+      "text": "お客様の名前は「{{vars.username}}」で、間違いないでしょうか?",
+      "quick_replies": [
+        {
+          "title": "はい",
+          "payload": "はい",
+          "content_type": "text"
+        },
+        {
+          "title": "いいえ",
+          "payload": "いいえ",
+          "content_type": "text"
+        }
+      ],
+      "collect":{
+        "key": "username_comfirm",
+        "options":[
+          {
+            "type": "string",
+            "pattern":"はい",
+            "thread_name":"question_mail"
+          },
+          {
+            "type": "string",
+            "pattern":"いいえ",
+            "thread_name":"question_username"
+          },
+          {
+            "default":"true",
+            "pattern": "default",
+            "action":"question_username_confirm"
+          }
+        ]
+      },
+      "thread_name":"question_username_confirm"
+    },
+    {"type": "comment", "data":"====================================="},
+    { 
+      "type": "action",
+      "action":"question_mail",
+      "thread_name":"question_username_confirm"
+    },
+    {
+      "type": "question", 
+      "text": "続いて、メールアドレスを教えていただけませんか？",
+      "quick_replies": [
+        {
+          "title": "回答無し",
+          "payload": "回答無し",
+          "content_type": "text"
+        }
+      ],
+      "collect":{
+        "key":"mail",
+        "options":[
+          {
+            "type":"regex",
+            "pattern":"[a-zA-Z]+[\\w\\.\\-]*@[a-zA-Z]+[\\w\\.\\-]*[a-zA-Z]+",
+            "thread_name":"question_mail_confirm"
+          },
+          {
+            "type":"string",
+            "pattern":"回答無し",
+            "thread_name":"question_telno"
+          },
+          {
+            "default":"true",
+            "thread_name":"question_mail_confirm"
+          }
+        ]
+      },
+      "thread_name":"question_mail"
+    },
+    {"type": "comment", "data":"====================================="},
+    { 
+      "type": "action",
+      "action":"question_mail_confirm",
+      "thread_name": "question_mail"
+    },
+    {
+      "type": "question", 
+      "text": "お客様のメールアドレスは「{{vars.mail}}」で、間違いないでしょうか?",
+      "quick_replies": [
+        {
+          "title": "はい",
+          "payload": "はい",
+          "content_type": "text"
+        },
+        {
+          "title": "いいえ",
+          "payload": "いいえ",
+          "content_type": "text"
+        }
+      ],
+      "collect":{
+        "key":"mail_confirm",
+        "options":[
+          {
+            "type": "string",
+            "pattern":"はい",
+            "thread_name":"question_telno"
+          },
+          {
+            "type": "string",
+            "pattern":"いいえ",
+            "thread_name":"question_mail"
+          },
+          {
+            "default":"true",
+            "pattern": "default",
+            "action":"question_mail_confirm"
+          }
+        ]
+      },
+      "thread_name":"question_mail_confirm"
+    },
+    
+    {"type": "comment", "data":"====================================="},
+    { 
+      "type": "action",
+      "action":"question_telno",
+      "thread_name": "question_mail_confirm"
+    },
+    {
+      "type": "question", 
+      "text": "続いて、お電話番号を教えていただけませんか？",
+      "quick_replies": [
+        {
+          "title": "回答無し",
+          "payload": "回答無し",
+          "content_type": "text"
+        }
+      ],
+      "collect":{
+        "key":"phone",
+        "options":[
+          {
+            "type":"regex",
+            "pattern":"\\d+[\\d\\-]+\\d+",
+            "thread_name":"question_all_confirm"
+          },
+          {
+            "type":"string",
+            "pattern":"回答無し",
+            "thread_name":"question_all_confirm"
+          },
+          {
+            "default":"true",
+            "pattern": "default",
+            "thread_name":"question_all_confirm"
+          }
+        ]
+      },
+      "thread_name":"question_telno"
+    },
+    {"type": "comment", "data":"====================================="},
+    { 
+      "type": "action",
+      "action":"question_all_confirm",
+      "thread_name": "question_telno"
+    },
+    {
+      "type": "question", 
+      "text": "「{{vars.username}}」様のメールアドレスは「{{vars.mail}}」で、電話番号は「{{vars.phone}}」で、よろしいでしょうか?",
+      "quick_replies": [
+        {
+          "title": "はい",
+          "payload": "はい",
+          "content_type": "text"
+        },
+        {
+          "title": "姓名修正",
+          "payload": "姓名修正",
+          "content_type": "text"
+        },
+        {
+          "title": "メール修正",
+          "payload": "メール修正",
+          "content_type": "text"
+        },
+        {
+          "title": "電話番号修正",
+          "payload": "電話番号修正",
+          "content_type": "text"
+        }
+      ],
+      "collect":{
+        "key":"mail_confirm",
+        "options":[
+          {
+            "type": "string",
+            "pattern":"はい",
+            "thread_name":"question_content"
+          },
+          {
+            "type": "string",
+            "pattern":"姓名修正",
+            "thread_name":"question_username"
+          },
+          {
+            "type": "string",
+            "pattern":"メール修正",
+            "thread_name":"question_mail"
+          },
+          {
+            "type": "string",
+            "pattern":"電話番号修正",
+            "thread_name":"question_telno"
+          },
+          {
+            "default":"true",
+            "pattern": "default",
+            "action":"question_content"
+          }
+        ]
+      },
+      "thread_name":"question_all_confirm"
+    },
+    {"type": "comment", "data":"====================================="},
+    { 
+      "type": "action",
+      "action":"question_content",
+      "thread_name": "question_all_confirm"
+    },
+    {
+      "type": "question", 
+      "text": "お問い合わせ内容は何でしょうか?",
+      "quick_replies": [
+        {
+          "title": "会社案内",
+          "payload": "会社案内"
+        },
+        {
+          "title": "SIサービス",
+          "payload": "SIサービス"
+        },
+        {
+          "title": "ソリューション",
+          "payload": "ソリューション"
+        },
+        {
+          "title": "製品",
+          "payload": "製品"
+        },
+        {
+          "title": "ニュース",
+          "payload": "ニュース"
+        },
+        {
+          "title": "採用情報",
+          "payload": "採用情報"
+        },
+        {
+          "title": "その他要件",
+          "payload": "その他要件"
+        }
+      ],
+      "collect":{
+        "key":"question_content",
+        "options":[
+          {
+            "type": "string",
+            "pattern":"会社案内",
+            "thread_name":"content_company"
+          },
+          {
+            "type": "string",
+            "pattern":"SIサービス",
+            "thread_name":"content_si"
+          },
+          {
+            "type": "string",
+            "pattern":"ソリューション",
+            "thread_name":"content_solution"
+          },
+          {
+            "type": "string",
+            "pattern":"製品",
+            "thread_name":"content_product"
+          },
+          {
+            "type": "string",
+            "pattern":"ニュース",
+            "thread_name":"content_news"
+          },
+          {
+            "type": "string",
+            "pattern":"採用情報",
+            "thread_name":"content_recruit"
+          },
+          {
+            "type": "string",
+            "pattern":"その他要件",
+            "thread_name":"content_other"
+          },
+          {
+            "default":"true",
+            "pattern": "default",
+            "action":"question_search"
+          }
+        ]
+      },
+      "thread_name":"question_content"
+    },
+    {
+      "type": "message", 
+      "text": "「{{vars.username}}」様のお問い合わせ内容「{{question_content}}」に只今調べます、少々お待ち下さい",
+      "thread_name":"question_search"
+    }
+  ]
+}

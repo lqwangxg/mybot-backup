@@ -6,38 +6,38 @@ module.exports = function(controller) {
   // controller.on('hello,welcome_back', onConnected);
   // controller.hears(['help','ヘルプ'], ['message','text'], onboarding);
   
-  async function onboarding(bot, message) {
-    console.log(`onboarding :${message.type}, ${message.user} `);
-    await bot.reply(message, {
-      type:"message",
-      text:`ようこそ！MBPSmartecのボットです。なんでも大丈夫、僕とチャットしましょう！`,
-      reply_user: message.user,
-      quick_replies: [
-        {
-          title: 'iot関連',
-          payload: 'iot関連',
-        },
-        {
-          title: 'bigdata関連',
-          payload: 'bigdata関連',
-        },
-        {
-          title: '会社案内',
-          payload: '会社案内',
-        },{
-          title: '事業内容',
-          payload: '事業内容',
-        },{
-          title: '最新ニュース',
-          payload: '最新ニュース',
-        },{
-          title: 'ログイン',
-          payload: 'ログイン',
-        }
-      ]
-    });
+  // async function onboarding(bot, message) {
+  //   console.log(`onboarding :${message.type}, ${message.user} `);
+  //   await bot.reply(message, {
+  //     type:"message",
+  //     text:`ようこそ！MBPSmartecのボットです。なんでも大丈夫、僕とチャットしましょう！`,
+  //     reply_user: message.user,
+  //     quick_replies: [
+  //       {
+  //         title: 'iot関連',
+  //         payload: 'iot関連',
+  //       },
+  //       {
+  //         title: 'bigdata関連',
+  //         payload: 'bigdata関連',
+  //       },
+  //       {
+  //         title: '会社案内',
+  //         payload: '会社案内',
+  //       },{
+  //         title: '事業内容',
+  //         payload: '事業内容',
+  //       },{
+  //         title: '最新ニュース',
+  //         payload: '最新ニュース',
+  //       },{
+  //         title: 'ログイン',
+  //         payload: 'ログイン',
+  //       }
+  //     ]
+  //   });
 
-  }
+  // }
 
   async function onConnected(bot, message){
     //controller.botClients

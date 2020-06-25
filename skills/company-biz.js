@@ -2,51 +2,51 @@
 const { BotkitConversation } = require("botkit");
 module.exports = function(controller) {
 
-  let convo = new BotkitConversation('iot', controller);
+  // let convo = new BotkitConversation('iot', controller);
   
-  //console.log(`convo:${JSON.stringify(convo)}`);
-  // set up a menu thread which other threads can point at.
-  convo.say({
-    text: '自動回答ができない場合、人工へ切り替わります。'
-  });
-  convo.ask('先に、お名前を教えて下さい', async(resp, convo, bot)=>{
-    console.log('お名前：', resp);
-  },'name');
+  // //console.log(`convo:${JSON.stringify(convo)}`);
+  // // set up a menu thread which other threads can point at.
+  // convo.say({
+  //   text: '自動回答ができない場合、人工へ切り替わります。'
+  // });
+  // convo.ask('先に、お名前を教えて下さい', async(resp, convo, bot)=>{
+  //   console.log('お名前：', resp);
+  // },'name');
 
-  convo.addAction('next_question');
+  // convo.addAction('next_question');
   
-  convo.addQuestion('ご質問の内容は何でしょうか？', async(resp, convo, bot)=>{
-    console.log('新質問：', resp);
-  },'new_question','next_question');
+  // convo.addQuestion('ご質問の内容は何でしょうか？', async(resp, convo, bot)=>{
+  //   console.log('新質問：', resp);
+  // },'new_question','next_question');
 
-  convo.addAction('confirmation','next_question');
+  // convo.addAction('confirmation','next_question');
 
-  // do a simple conditional branch looking for user to say "no"
-  convo.addQuestion('{{vars.name}} 様の質問内容：「 {{vars.new_question}}」.これで人工応答へ切り替えしますね?', [
-    {
-      //Noの場合、再度質問
-        pattern: 'no|いいえ',
-        handler: async(response, convo, bot) => {
-            // if user says no, go back to favorite color.
-            await convo.gotoThread('next_question');
-        }
-    },
-    {
-        default: true,
-        handler: async(response, convo, bot) => {
-          console.log('新質問：', response);
-          // do nothing, allow convo to complete.
-          //TODO：人工へ切り替わります。
+  // // do a simple conditional branch looking for user to say "no"
+  // convo.addQuestion('{{vars.name}} 様の質問内容：「 {{vars.new_question}}」.これで人工応答へ切り替えしますね?', [
+  //   {
+  //     //Noの場合、再度質問
+  //       pattern: 'no|いいえ',
+  //       handler: async(response, convo, bot) => {
+  //           // if user says no, go back to favorite color.
+  //           await convo.gotoThread('next_question');
+  //       }
+  //   },
+  //   {
+  //       default: true,
+  //       handler: async(response, convo, bot) => {
+  //         console.log('新質問：', response);
+  //         // do nothing, allow convo to complete.
+  //         //TODO：人工へ切り替わります。
           
-        }
-    }
-  ], 'confirm', 'confirmation');
+  //       }
+  //   }
+  // ], 'confirm', 'confirmation');
   
  
-  controller.addDialog(convo);
-  controller.hears(/^iot関連$/, 'message,user_say,text', async function(bot, message) {
-    await bot.beginDialog('iot');
-  });
+  // controller.addDialog(convo);
+  // controller.hears(/^iot関連$/, 'message,user_say,text', async function(bot, message) {
+  //   await bot.beginDialog('iot');
+  // });
   
   /*
 
