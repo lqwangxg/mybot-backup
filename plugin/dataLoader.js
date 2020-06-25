@@ -186,7 +186,7 @@ module.exports = async function (controller) {
         quick_replies:script.quick_replies
       }, script.collect.options, script.collect.key)
     }
-    console.log("addAsk key====================>:", script.collect.key, script.thread_name);
+    console.log("addAsk key====================>:", script.collect.key);
     await onVarChange(convo, script.collect.key);
   }
   async function addQuestion(convo, script){
@@ -296,7 +296,7 @@ module.exports = async function (controller) {
   }
 
   async function onVarChange(convo, key){
-    if("string" === key){
+    if("string" === typeof(key)){
       convo.onChange(key, async(response)=>{
         controller.vars[key] = response;
         console.log(`onVarChange===========================[${key}]:[${response}]`);
@@ -312,8 +312,10 @@ module.exports = async function (controller) {
   }
 
   //====================================================
-  function convertToRegex(option){    
-    if (typeof option === 'string' && option.match(/^\/(.+)\/$/)) {
+  function convertToRegex(option){
+    if(!option)return option;
+    
+    if (typeof(option) === 'string' && option.match(/^\/(.+)\/$/)) {
       option = new RegExp(option.substring(1,option.length-1));
     }else if(option.type==="regex" && option.pattern){
       option.pattern = new RegExp(option.pattern);
@@ -324,13 +326,15 @@ module.exports = async function (controller) {
     return option;
   }
   function convertAnswerHandler(option){
+    if(!option)return option;
+
     // Regexの場合、Regexに変換
     option = convertToRegex(option);
 
-    if(option.action){
+    if(option.thread_name){
       option.handler = async(response, convo, bot) => {
-        console.log("convertAnswerHandler answer============>>>>>>>:", option.action, response);
-        await convo.gotoThread(option.action);
+        console.log("convertAnswerHandler answer============>>>>>>>:", option.thread_name, response);
+        await convo.gotoThread(option.thread_name);
       }
     }
     return option;
