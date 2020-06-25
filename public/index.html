@@ -100,6 +100,7 @@
           this.chatbot.on('disconnected', this.onDisConnected);
           this.chatbot.on('connected', this.onConnected);
           this.chatbot.on('message', this.onReceived);
+          this.chatbot.on('text', this.onReceived);
           this.chatbot.on('sent', this.onMessageSent);
           this.userid = Math.random().toString().substr(2,6);
           this.chatbot.connect(this.userid);
