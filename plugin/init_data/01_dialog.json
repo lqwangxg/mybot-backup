@@ -117,6 +117,14 @@
     },
     {
       "type": "question", 
+      "before": [
+        {
+          "key":"mail",
+          "type":"regex",
+          "pattern":"[a-zA-Z]+[\\w\\.\\-]*@[a-zA-Z]+[\\w\\.\\-]*[a-zA-Z]+",
+          "thread_name":"question_telno"
+        }
+      ],
       "text": "続いて、メールアドレスを教えていただけませんか？",
       "quick_replies": [
         {
@@ -207,7 +215,7 @@
         }
       ],
       "collect":{
-        "key":"phone",
+        "key":"telno",
         "options":[
           {
             "type":"regex",
@@ -236,7 +244,7 @@
     },
     {
       "type": "question", 
-      "text": "「{{vars.username}}」様のメールアドレスは「{{vars.mail}}」で、電話番号は「{{vars.phone}}」で、よろしいでしょうか?",
+      "text": "「{{vars.username}}」様のメールアドレスは「{{vars.mail}}」で、電話番号は「{{vars.telno}}」で、よろしいでしょうか?",
       "quick_replies": [
         {
           "title": "はい",
@@ -364,14 +372,8 @@
             "thread_name":"content_recruit"
           },
           {
-            "type": "string",
-            "pattern":"その他要件",
-            "thread_name":"content_other"
-          },
-          {
             "default":"true",
-            "pattern": "default",
-            "action":"question_search"
+            "pattern": "default"
           }
         ]
       },
@@ -379,8 +381,43 @@
     },
     {
       "type": "message", 
-      "text": "「{{vars.username}}」様のお問い合わせ内容「{{question_content}}」に只今調べます、少々お待ち下さい",
-      "thread_name":"question_search"
+      "text": "MBP SMARTEC株式会社",
+      "url": "http://112.126.67.102:30006/about-us/",
+      "thread_name":"content_company"
+    },
+    {
+      "type": "message", 
+      "text": "IMバージョンアップ案件をご紹介致します。",
+      "url": "http://112.126.67.102:30006/si-service/",
+      "thread_name":"content_si"
+    },
+    {
+      "type": "message", 
+      "text": "ビッグデータソリューション",
+      "url": "http://112.126.67.102:30006/solution/",
+      "thread_name":"content_solution"
+    },    
+    {
+      "type": "message", 
+      "text": "１週間IOT導入・デモケース事例",
+      "url": "http://112.126.67.102:30006/product/",
+      "thread_name":"content_product"
+    },
+    {
+      "type": "message", 
+      "text": "MBPSの最新トピックス",
+      "url": "http://112.126.67.102:30006/news/",
+      "thread_name":"content_news"
+    },
+    {
+      "type": "message", 
+      "text": "採用情報・募集要項",
+      "url": "http://112.126.67.102:30006/recruitments/",
+      "thread_name":"content_recruit"
+    },
+    {
+      "type": "message", 
+      "text": "「{{vars.username}}」様のお問い合わせ内容「{{question_content}}」に只今調べます、少々お待ち下さい"
     }
   ]
 }

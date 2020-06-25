@@ -6,7 +6,8 @@
     "webhook",
     "line"
   ],
-  "hears": [
+  "type": "hears",
+  "script": [
     {
       "keywords": "/[御貴]社の強[み]?/",
       "events": [
@@ -14,6 +15,10 @@
         "user_say",
         "text"
       ],
+      "required":{
+        "key":["username", "mail", "telno"],
+        "dialog":"confirm_userinfo"
+      },
       "replys": [
         {
           "text": [
@@ -37,7 +42,10 @@
             }
           ]
         }
-      ]
+      ],
+      "after":{
+        "key":"data"
+      }
     }
   ]
 }

@@ -7,7 +7,9 @@ let initQADataPath = buildPath.join(__dirname, "init_data");
 const { BotkitConversation } = require("botkit");
 
 module.exports = async function (controller) {
-
+  if(!controller.vars){
+    controller.vars = {};
+  }
   //====================================================
   fs.readdirSync(initQADataPath).forEach((file) => {
     var filePath = buildPath.join(initQADataPath, file);
@@ -94,7 +96,25 @@ module.exports = async function (controller) {
     script.keywords = convertToRegex(script.keywords);
     controller.hears(script.keywords, script.events, async function(bot, message) {
       console.log("AddHearTriggerScript: ", script);
-      
+      if(script.required && script.required.key && script.required.dialog 
+        && !isRequiredValid(controller, script.required.key)){
+        console.log(" heard message:", message);
+        controller.vars.lastMessage = {
+          type: message.type,
+          text: message.text,
+          user: message.user,
+          channel: message.channel,
+          value: message.value,
+          data: {text: message.data.text},
+          user_profile: message.user_profile,
+          reply_user: message.reply_user 
+        };
+        
+        //Object.assign(controller.vars.lastMessage.reference, message.reference); 
+        await bot.beginDialog(script.required.dialog);
+        return;
+      }
+
       if(script.replys){
         await replyMessage(bot, message, script.replys);
       }
@@ -103,7 +123,13 @@ module.exports = async function (controller) {
       }
     });
   }
-
+  function isRequiredValid(controller, key){
+    if(Array.isArray(key)){
+      return key.every(key=> !!controller.vars[key]);
+    }else{
+      return !!controller.vars[key]
+    }
+  }
   //====================================================
   async function dialogFromJson(controller, json){
     if("dialog" != json.type || !json.script || !json.id){
@@ -119,8 +145,24 @@ module.exports = async function (controller) {
     addAsk(convo, confirm);    
     addMessage(convo, confirm);
     addQuestion(convo, confirm);
+    
+    addBefore(convo, confirm.before, confirm.thread_name);
+    addAfter(convo, confirm);
+    
   }
-  //====================================================
+  //====================================================  
+  async function addAction(convo, confirm){
+    if("action" != confirm.type){
+      return;
+    }
+
+    //console.log("addAction===================> :", confirm)
+    if(confirm.thread_name){
+      convo.addAction(confirm.action,confirm.thread_name);
+    }else{
+      convo.addAction(confirm.action);
+    }
+  }
   async function addAsk(convo, confirm){
     if("ask" != confirm.type){
       return;
@@ -128,12 +170,12 @@ module.exports = async function (controller) {
 
     if(Array.isArray(confirm.collect.options)){
       confirm.collect.options = confirm.collect.options.map(option=>{
-        return convertMessage(option);
+        return convertAnswerHandler(option);
       });
     }else{
-      confirm.collect.options = convertMessage(confirm.collect.options);
+      confirm.collect.options = convertAnswerHandler(confirm.collect.options);
     }
-    console.log("====================confirm===>", confirm);
+    //console.log("addAsk===================> :", confirm)
     if(confirm.collect.options.length===0){
       convo.ask({
         text:confirm.text,
@@ -145,7 +187,7 @@ module.exports = async function (controller) {
         quick_replies:confirm.quick_replies
       }, confirm.collect.options, confirm.collect.key)
     }
-    
+    await onVarChange(convo, confirm.collect.key);
   }
   async function addQuestion(convo, confirm){
     if("question" != confirm.type){
@@ -154,14 +196,14 @@ module.exports = async function (controller) {
     if(confirm.collect && confirm.collect.options){
       if(Array.isArray(confirm.collect.options)){
         confirm.collect.options = confirm.collect.options.map(option=>{
-          return convertMessage(option);
+          return convertAnswerHandler(option);
         });
       }else{
-        confirm.collect.options = convertMessage(confirm.collect.options);
+        confirm.collect.options = convertAnswerHandler(confirm.collect.options);
       }
     }
 
-    console.log("addAction convertMessage confirm:", confirm)
+    //console.log("addQuestion===================> :", confirm)
     if(confirm.collect.options.length===0){
       convo.addQuestion({
         text:confirm.text,
@@ -173,32 +215,97 @@ module.exports = async function (controller) {
         quick_replies:confirm.quick_replies
       }, confirm.collect.options, confirm.collect.key, confirm.thread_name)
     }
-    
-  }
-
-  async function addAction(convo, confirm){
-    if("action" != confirm.type){
-      return;
-    }
-    console.log("addAction confirm:", confirm)
-    if(confirm.thread_name){
-      convo.addAction(confirm.action,confirm.thread_name);
-    }else{
-      convo.addAction(confirm.action);
-    }
+    await onVarChange(convo, confirm.collect.key);
   }
   async function addMessage(convo, confirm){
     if("message" != confirm.type){
       return;
     }
-    console.log("addMessage confirm:", confirm)
+    
+    //console.log("addMessage===================> :", confirm)
     if(confirm.thread_name){
       convo.addMessage(confirm.text,confirm.thread_name);
     }else{
       convo.addMessage(confirm.text);
-    }  
-    if(confirm.thread_word){
-      convo.addAction(confirm.thread_word);
+    }
+  }
+  
+  async function addBefore(convo, before, thread_name){
+    if(!before){
+      return;
+    }
+
+    console.log("addBefore===================> :", thread_name, before)
+    if(Array.isArray(before)){
+      before.forEach(before=>{
+        addBefore(convo, before, thread_name);
+      });
+    }else{
+      //データがない場合、処理対象外
+      if(!before.key){
+        return;
+      }
+      //指定Threadへ飛ばす前の処理
+      await convo.before(thread_name, async (convoBefore, bot)=>{
+        console.log("before======> :", thread_name, before.thread_name, controller.vars)
+
+        //対応変数がまだない場合、処理しない
+        if(!controller.vars[before.key]){
+          return;
+        }
+
+        let varValue = controller.vars[key];
+        var option = convertToRegex(before);
+        //入力チェック正常の場合、before.thread_nameへ
+        if(option.type==="regex" && option.pattern.test(varValue)){
+          console.log("before======> :",thread_name, " goto==> ",before.thread_name);
+          convoBefore.gotoThread(before.thread_name);
+          return;
+        }
+        //入力チェック正常の場合、before.thread_nameへ
+        if(option.type==="string" && option.pattern === varValue){
+          console.log("before======> :",thread_name, " goto==> ",before.thread_name);
+          convoBefore.gotoThread(before.thread_name);
+          return;
+        }
+      });
+    }
+  }
+ 
+  async function addAfter(convo, confirm){
+    //console.log("addAfter======confirm> :", confirm)
+
+    if(!confirm.after){
+      return;
+    }
+    let datakey = "datakey";
+    if(confirm.keywords){
+      datakey = confirm.keywords;
+    }else if(confirm.action){
+      datakey = confirm.action;
+    }else if(confirm.thread_name){
+      datakey = confirm.thread_name;
+    }
+
+    await convo.after((results, bot)=>{
+      controller.vars[datakey] = results;
+      console.log(`after ==========> key:${datakey}, result:${results}`);
+    });
+  }
+
+  async function onVarChange(convo, key){
+    if("string" === key){
+      convo.onChange(key, async(response, convo, bot)=>{
+        controller.vars[key] = response;
+        console.log(`onVarChange======[${key}]:[${response}]`);
+      });
+    }else if(Array.isArray(key)){
+      key.forEach(key => {
+        convo.onChange(key, async(response, convo, bot)=>{
+          controller.vars[key] = response;
+          console.log(`onVarChange======[${key}]:[${response}]`);
+        });
+      });
     }
   }
 
@@ -213,12 +320,35 @@ module.exports = async function (controller) {
     }
     return message;
   }
-  function convertMessage(message){
+  function convertAnswerHandler(message){
     // Regexの場合、Regexに変換
     message = convertToRegex(message);
 
     if(message.thread_name){
       message.handler = async(response, convo, bot) => {
+        await convo.gotoThread(message.thread_name);
+      }
+    }
+    return message;
+  }
+  function convertBeforeHandler(message){
+    // Regexの場合、Regexに変換
+    message = convertToRegex(message);
+
+    if(message.thread_name){
+      message.handler = async(convo, bot) => {
+        await convo.gotoThread(message.thread_name);
+      }
+    }
+    return message;
+  }
+
+  function convertAfterHandler(message){
+    // Regexの場合、Regexに変換
+    message = convertToRegex(message);
+
+    if(message.thread_name){
+      message.handler = async(response, bot) => {
         await convo.gotoThread(message.thread_name);
       }
     }
