@@ -322,7 +322,7 @@ module.exports = async function (controller) {
     }else if (Array.isArray(option)){
       option = option.map(op => convertToRegex(op));
     }
-    console.log("convertToRegex:",   option)
+    //console.log("convertToRegex:",   option)
     return option;
   }
   function convertAnswerHandler(option){
