@@ -177,11 +177,13 @@ module.exports = async function (controller) {
     //console.log("addAsk===================> :", confirm)
     if(!script.collect || !script.collect.options || script.collect.options.length === 0){
       convo.ask({
+        user: convo.id,
         text:script.text,
         quick_replies:script.quick_replies
       }, async()=>{}, script.collect.key);
     }else{
       convo.ask({
+        user: convo.id,
         text:script.text,
         quick_replies:script.quick_replies
       }, script.collect.options, script.collect.key)
@@ -206,16 +208,18 @@ module.exports = async function (controller) {
     //console.log("addQuestion===================> :", confirm)
     if(!script.collect || !script.collect.options || script.collect.options.length === 0){
       convo.addQuestion({
+        user: convo.id,
         text:script.text,
         quick_replies:script.quick_replies
       }, async ()=>{}, script.collect.key, script.thread_name)
     }else{
       convo.addQuestion({
+        user: convo.id,
         text:script.text,
         quick_replies:script.quick_replies
       }, script.collect.options, script.collect.key, script.thread_name)
     }
-    console.log("addQuestion key====================>:", script.collect.key, script.thread_name);
+    console.log("addQuestion key=========>:", script.collect.key, "==next==>", script.thread_name);
     await onVarChange(convo, script.collect.key);
   }
   async function addMessage(convo, script){
@@ -225,9 +229,17 @@ module.exports = async function (controller) {
     
     //console.log("addMessage===================> :", confirm)
     if(script.thread_name){
-      convo.addMessage(script.text, script.thread_name);
+      convo.addMessage(
+        {
+          user: convo.id,
+          text:script.text
+        }, 
+        script.thread_name);
     }else{
-      convo.addMessage(script.text);
+      convo.addMessage({
+        user: convo.id,
+        text:script.text
+      });
     }
   }
   
@@ -236,7 +248,7 @@ module.exports = async function (controller) {
       return;
     }
 
-    console.log("addBefore===================> :", thread_name, before)
+    console.log("addBefore=================from=> :", thread_name, "==>next:", before.thread_name)
     if(Array.isArray(before)){
       before.forEach(before=>{
         addBefore(convo, before, thread_name);
@@ -299,13 +311,13 @@ module.exports = async function (controller) {
     if("string" === typeof(key)){
       convo.onChange(key, async(response)=>{
         controller.vars[key] = response;
-        console.log(`onVarChange===========================[${key}]:[${response}]`);
+        //console.log(`onVarChange===========================[${key}]:[${JSON.stringify(response)}]`);
       });
     }else if(Array.isArray(key)){
       key.forEach(key => {
         convo.onChange(key, async(response)=>{
           controller.vars[key] = response;
-          console.log(`onVarChange=========================[${key}]:[${response}]`);
+          //console.log(`onVarChange=========================[${key}]:[${JSON.stringify(response)}]`);
         });
       });
     }

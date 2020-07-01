@@ -47,6 +47,11 @@ if (process.env.CMS_URI) {
 
 // Once the bot has booted up its internal services, you can use them to do stuff.
 controller.ready(() => {
+    //共通関数等のロード
+    var commonPath = require("path").join(__dirname, "common");
+    require("fs").readdirSync(commonPath).forEach(function(file) {
+      require("./common/" + file)(controller); 
+    });
 
     //load customize plugins
     var pluginPath = require("path").join(__dirname, "plugin");

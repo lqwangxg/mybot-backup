@@ -131,6 +131,7 @@ var Botkit = {
       var message = null;
       try {
         message = JSON.parse(event.data);
+        console.log("socket.addEventListener====message:", message);
       } catch (err) {
         that.trigger("socket_error", err);
         return;
@@ -147,7 +148,7 @@ var Botkit = {
   },
   trigger: function (event, details) {
     // client内部eventが発生、外へ知らせ
-    console.log("trigger from client ====>", event, details);
+    //console.log("trigger from client ====>", event, details);
     this.element.$emit(event, details);
   },
   request: function (url, body) {
@@ -209,7 +210,7 @@ var Botkit = {
     return false;
   },
   deliverMessage: function (message) {
-    console.log("deliverMessage To ChatBot===>", message);
+    console.log("deliverMessage socket.send===>", message);
     if (this.options.use_sockets) {
       this.socket.send(JSON.stringify(message));
     } else {

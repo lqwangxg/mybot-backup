@@ -1,334 +1,311 @@
 <html>
-    <head>
-        <title>Botkit On VUE</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js"></script>
-        <script src="https://cdn.rawgit.com/showdownjs/showdown/1.7.4/dist/showdown.min.js"></script>
-        <link rel="stylesheet" href="/css/styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <!-- import Vue Element -->
-        <script src="https://unpkg.com/vue/dist/vue.js"></script>
-        <!-- import Vue Element UI -->
-        <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-        <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-        
-    </head>
-    <body >
-      <div class="wrapper">
-        <div id="message_window">
-          <el-container>
-            <el-header>MBPSMARTEC CHATBOT v0.1</el-header>
-            <el-container>
-            <el-aside width="200px">
-              <h1>{{default_user}} 様 <br>{{greeting}}</h1>
-              <hr>
-              <div v-for="user in online_users" >
-                <el-badge :value="user.notice.warn" :type="getNoticeType(user.notice)" :hidden="user.notice.warn==0" class="item" >
-                  <el-button @click="addUserTab(user.user)" type="primary" plain>
-                    <i class="el-icon-user"></i> {{user.user}} 
-                  </el-button>
-                </el-badge>
-              </div>
-            </el-aside>
-            <el-main>
-              <el-tabs v-model="active_user"  type="border-card" @tab-remove="removeUserTab">
-                <el-tab-pane
-                  v-for="(item, index) in user_tabs" 
-                  :key="item.name" :name="item.name" :label="item.title" :closable="item.closable">
-                  <span slot="label"><i class="el-icon-user"></i> {{item.title}}</span>
+<head>
+  <title>Botkit On VUE</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js"></script>
+  <script src="https://cdn.rawgit.com/showdownjs/showdown/1.7.4/dist/showdown.min.js"></script>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-                  <section class="section">
-                    <div v-for="msg in getMessageList(item.name)" >
-                      <div v-if="msg.isTyping" class="typing-indicator">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                      </div>
-                      <div v-if="msg.user === 'bot'">
-                        <el-row  style="float: left;">
-                          <el-col :span="8">
-                            ChatBot:                       
-                          </el-col>
-                          <el-col :span="16">
-                            <div class="grid-content bg-purple-light">
-                              <el-alert :title="msg.text" type="success"  :closable="false"></el-alert>
-                              <div v-for="reply in msg.quick_replies" >
-                                <el-button type="primary" plain @click="onQuickReply(reply.payload)">{{ reply.title }}</el-button>
-                              </div>
+  <!-- import Vue Element -->
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <!-- import Vue Element UI -->
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+
+</head>
+
+<body>
+  <div class="wrapper">
+    <div id="message_window">
+      <el-container>
+        <el-header>MBPSMARTEC CHATBOT v0.1</el-header>
+        <el-container>
+          <el-aside width="200px">
+            <h1>{{default_user}} 様 <br>{{greeting}}</h1>
+            <hr>
+            <div v-for="user in online_users">
+              <el-badge :value="user.notice.warn" :type="getNoticeType(user.notice)" :hidden="user.notice.warn==0"
+                class="item">
+                <el-button @click="addUserTab(user.user)" type="primary" plain>
+                  <i class="el-icon-user"></i> {{user.user}}
+                </el-button>
+              </el-badge>
+            </div>
+          </el-aside>
+          <el-main>
+            <el-tabs v-model="active_user" type="border-card" @tab-remove="removeUserTab">
+              <el-tab-pane v-for="(item, index) in user_tabs" :key="item.name" :name="item.name" :label="item.title"
+                :closable="item.closable">
+                <span slot="label"><i class="el-icon-user"></i> {{item.title}}</span>
+
+                <section class="section">
+                  <div v-for="msg in getMessageList(item.name)">
+                    <div v-if="msg.isTyping" class="typing-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                    <div v-if="msg.user === 'bot'">
+                      <el-row style="float: left;">
+                        <el-col :span="8">
+                          ChatBot:
+                        </el-col>
+                        <el-col :span="16">
+                          <div class="grid-content bg-purple-light">
+                            <el-alert :title="msg.text" type="success" :closable="false"></el-alert>
+                            <div v-for="reply in msg.quick_replies">
+                              <el-button type="primary" plain @click="onQuickReply(reply.payload)">{{ reply.title }}
+                              </el-button>
                             </div>
-                          </el-col>       
-                        </el-row>              
-                      </div>
-                      <div v-else>
-                        <el-row style="float: right;"> 
-                          <el-col :span="8" style="float: right;">
-                            {{msg.user}}:
-                          </el-col>
-                          <el-col :span="16">
-                            <div class="grid-content bg-purple-light">
-                              <el-alert :title="msg.text" type="success"  :closable="false"></el-alert><br>
-                              <div v-for="reply in msg.quick_replies" >
-                                <el-button type="primary" plain>{{ reply.title }}</el-button>
-                              </div>
+                          </div>
+                        </el-col>
+                      </el-row>
+                    </div>
+                    <div v-else>
+                      <el-row style="float: right;">
+                        <el-col :span="8" style="float: right;">
+                          {{msg.user}}:
+                        </el-col>
+                        <el-col :span="16">
+                          <div class="grid-content bg-purple-light">
+                            <el-alert :title="msg.text" type="success" :closable="false"></el-alert><br>
+                            <div v-for="reply in msg.quick_replies">
+                              <el-button type="primary" plain>{{ reply.title }}</el-button>
                             </div>
-                          </el-col>
-                        </el-row>      
-                      </div>
-                    
-                    </div> 
-                  </section>              
-                </el-tab-pane>
-              </el-tabs>
-            </el-main>
-          </el-container>
-            <el-footer>
-              <form>
-              <input type="text" autocomplete="off" id="messenger_input" placeholder="Type here..." v-model="inputText" />
-              <button @click="sendMessage" >Send</button>
-              
-            </form>
-            </el-footer>
-          </el-container>
-        </div>
-      </div>
-      <script src="/client.js"></script>
-    </body>
+                          </div>
+                        </el-col>
+                      </el-row>
+                    </div>
 
-    <script>
-      class ChatDialog {
-        constructor(user, reply_user, origin_user){
-          this.user = "bot";  //左側は必ずchatbot
-          this.reply_user = user !="bot"? user : reply_user;
-          this.origin_user = origin_user;
-          this.title = origin_user? origin_user:this.reply_user;
-          this.notice = {
-            info :0,
-            warn :0,
-            count: this.info + this.warn,
-            type: this.warn>0? "warning":"primary"
+                  </div>
+                </section>
+              </el-tab-pane>
+            </el-tabs>
+          </el-main>
+        </el-container>
+        <el-footer>
+          <form>
+            <input type="text" autocomplete="off" id="messenger_input" placeholder="Type here..." v-model="inputText" />
+            <button @click="sendMessage">Send</button>
+
+          </form>
+        </el-footer>
+      </el-container>
+    </div>
+  </div>
+  <script src="/client.js"></script>
+  <script src="/ChatDialog.js"></script>
+</body>
+
+<script>
+  
+  //import Botkit from "./"
+  var v = new Vue({
+    el: '#message_window',
+    data: function () {
+      return {
+        chatbot: Botkit,
+        chat_connected: false,
+        inputText: '',
+        default_user: '',
+        active_user: "",
+        online_users: [],
+        user_tabs: [],
+        chats: []
+      }
+    },
+    mounted: function () {
+      this.chatbot.element = this;
+      this.chatbot.on('disconnected', this.onDisConnected);
+      this.chatbot.on('connected', this.onConnected);
+      this.chatbot.on('notified', this.onNotified);
+      this.chatbot.on('text', this.onReceived);
+      this.chatbot.on('message', this.onReceived);
+      this.chatbot.on('sent', this.onMessageSent);
+      this.default_user = 'admin';
+      this.online_users.push({
+        user: this.default_user,
+        notice: {
+          info: 0,
+          warn: 0
+        },
+        message_list: []
+      });
+      this.chats.push(new ChatDialog(this.default_user));
+      this.addUserTab(this.default_user);
+      this.chatbot.connect(this.default_user);
+    },
+    computed: {
+      connect_comment: () => {
+        var msg = '';
+        if (this.chat_connected) {
+          msg = "接続中。。。";
+        } else {
+          msg = "切断された... 接続をやり直します。";
+        }
+        return msg;
+      },
+      greeting: () => {
+        const now = new Date();
+        if (now.getHours() < 12) {
+          return "おはようございます。"
+        } else {
+          return "こんにちは。"
+        }
+      }
+    },
+    methods: {
+      onConnected: function (event, msg) {
+        this.chat_connected = true;
+        this.$message({
+          message: 'サーバに接続できました。',
+          type: 'success'
+        });
+        this.chatbot.sendEvent({
+          name: 'connected'
+        });
+      },
+      onDisConnected: function (event, msg) {
+        this.chat_connected = false;
+        this.$message({
+          message: 'ネットワークが切断されました。',
+          type: 'error'
+        });
+      },
+      onReceived: function (event, msg) {
+        if (!msg.user) {
+          msg.user = "bot";
+        }
+        if(msg.channel && msg.channel != msg.user && !msg.origin_user){
+          msg.origin_user = msg.channel;
+        }
+          
+        console.log("msg====================>", msg)
+        var found = this.FindUser(msg);
+        if (found) {
+          if (!found.message_list) {
+            found.message_list = [];
           }
-          this.message_list = [];
+          found.message_list.unshift(msg);
         }
 
-        isMe(msg){
-          if(this.origin_user){
-            if(msg.origin_user){
-              return this.origin_user === msg.origin_user;
-            }
-            if(typeof(msg)==="string"){
-              return this.origin_user === msg;
-            }
+      },
+      getNoticeType(notice) {
+        return notice.warn > 0 ? "warning" : "primary";
+      },
+      getMessageList(user) {
+        console.log("user=====================>", user)
+        const found = this.online_users.find(u => u.user === user);
+        return found.message_list;
+      },
+      getUserFrom(msg) {
+        if (msg.origin_user) return msg.origin_user;
+        if (msg.reply_user && msg.reply_user != "bot") return msg.reply_user;
+        if (msg.user && msg.user != "bot") return msg.user;
+        if (typeof (msg) === "string" && msg && msg != "bot") return msg;
+        return "";
+      },
+      FindUser(msg) {
+        var user = this.getUserFrom(msg);
+        if (user) {
+          const found = this.online_users.find(u => u.user === user);
+          if (!found) {
+            this.online_users.push({
+              user: user,
+              notice: {
+                info: 0,
+                warn: 0
+              },
+              message_list: []
+            });
           }
-          if(this.reply_user){
-            if(msg.reply_user){
-              return this.reply_user === msg.reply_user;
-            }
-            if(msg.user){
-              return this.reply_user === msg.user;
-            }
-            if(typeof(msg)==="string"){
-              return this.reply_user === msg;
-            }
-          }
-          
-          return false;
+          return found;
         }
-        
-      };
-      //import Botkit from "./"
-      var v = new Vue({
-        el: '#message_window',
-        data: function() {
-          return {
-            chatbot: Botkit,
-            chat_connected: false,
-            inputText:'',
-            default_user:'',
-            active_user:"",
-            online_users:[],
-            user_tabs:[],
-            chats:[]
+        return null;
+      },
+      onNotified: function (event, msg) {
+        //メッセージ受け取り
+        var found = this.FindUser(msg);
+        if (msg.event === "online") {
+          //onlineはメッセージ内容なし
+        } else if (msg.event === "unknown") {
+          //dialog.notice.warn++;
+          if (msg.origin_user && msg.origin_user != msg.reply_user) {
+            msg.text = "[" + msg.origin_user + "]様より：" + msg.text;
+            msg.tranfered = true;
           }
-        },
-        mounted : function(){
-          this.chatbot.element = this;
-          this.chatbot.on('disconnected', this.onDisConnected);
-          this.chatbot.on('connected', this.onConnected);
-          this.chatbot.on('notified', this.onNotified);
-          
-          this.chatbot.on('message', this.onReceived);
-          this.chatbot.on('sent', this.onMessageSent);
-          this.default_user ='admin';
-          this.online_users.push({
-                    user : this.default_user,
-                    notice: {
-                      info :0,
-                      warn :0
-                    },
-                    message_list:[]
-                  });
-          this.chats.push(new ChatDialog(this.default_user));
-          this.addUserTab(this.default_user);
-          this.chatbot.connect(this.default_user);
-        },
-        computed: {
-          connect_comment:()=>{
-            var msg = '';
-            if(this.chat_connected){
-              msg = "接続中。。。";
-            }else{
-              msg = "切断された... 接続をやり直します。";
-            }
-            return msg;
-          },
-          greeting: ()=>{
-            const now = new Date();
-            if(now.getHours()<12){
-              return "おはようございます。"
-            }else{
-              return "こんにちは。"
-            }
-          }
-        },
-        methods:{
-          onConnected:function(event, msg){
-            this.chat_connected = true;
-            this.$message({
-              message: 'サーバに接続できました。',
-              type: 'success'
-            });
-            this.chatbot.sendEvent({
-              name: 'connected'
-            });
-          },
-          onDisConnected:function(event, msg){
-            this.chat_connected = false;
-            this.$message({
-              message: 'ネットワークが切断されました。',
-              type: 'error'
-            });
-          },
-          onReceived:function(event, msg){
-            if(!msg.user){
-              msg.user = "bot";
-            }
-            var found = this.FindUser(msg);
-            found.message_list.unshift(msg);
-          },
-          getNoticeType(notice){
-            return notice.warn>0 ? "warning":"primary";
-          },
-          getMessageList(user){
-            const found = this.online_users.find(u => u.user === user);
-            return found.message_list;
-          },
-          getUserFrom(msg){
-            if(msg.origin_user)return msg.origin_user;
-            if(msg.reply_user && msg.reply_user!="bot" )return msg.reply_user;
-            if(msg.user && msg.user!="bot" )return msg.user;
-            if(typeof(msg)==="string" && msg && msg !="bot" )return msg;
-            return "";
-          },
-          FindUser(msg){
-            var user = this.getUserFrom(msg);
-            if(user){
-                const found = this.online_users.find(u => u.user === user);
-                if(!found){
-                  this.online_users.push({
-                    user : user,
-                    notice: {
-                      info :0,
-                      warn :0
-                    },
-                    message_list:[]
-                  });
-                }
-                return found;
-              }
-            return null;
-          },
-          onNotified:function(event, msg){
-            //メッセージ受け取り
-            var found = this.FindUser(msg);
-            if(msg.event === "online"){              
-              //onlineはメッセージ内容なし
-            }else if(msg.event ==="unknown"){
-              //dialog.notice.warn++;
-              if(msg.origin_user && msg.origin_user != msg.reply_user){
-                msg.text ="[" + msg.origin_user + "]様より：" + msg.text;
-                msg.tranfered = true;
-              }
-              found.notice.warn++;
-              found.message_list.unshift(msg);
-            }
-          },
-          addUserTab(username) {
-            var idx = this.user_tabs.findIndex((e) => e.name === username);
-            //存在しなければ、追加
-            if(idx == -1){
-              this.user_tabs.push({
-                title: username,
-                name: username,
-                closable: username != this.default_user
-              });              
-            }
-            this.active_user = username;
-          },
-          removeUserTab(username) {
-            var idx = this.user_tabs.findIndex((e) => e.name === username);
-            //存在すれば、削除
-            if(idx!= -1){
-              this.user_tabs.splice(idx, 1);
-              if(idx >= this.user_tabs.length){
-                idx = this.user_tabs.length - 1;
-              }
-              this.active_user = this.user_tabs[idx].name;
-            }
-          },
-          onMessageSent:function(event, msg){
-            var found = this.FindUser(msg);
-            found.message_list.unshift(msg);
-          },
-          onQuickReply:function(payload){
-            console.log(payload);
-            this.chatbot.quickReply(payload);
-          },
-          sendMessage : function(e){
-            var message ={
-              text: this.inputText,
-              user: this.default_user,
-              reply_user: "bot",
-              origin_user: this.active_user,
-            }
-            Botkit.send(message, e);      
-            this.inputText = '';
-          }
+          found.notice.warn++;
+          found.message_list.unshift(msg);
         }
-      })
-    </script>
+      },
+      addUserTab(username) {
+        var idx = this.user_tabs.findIndex((e) => e.name === username);
+        //存在しなければ、追加
+        if (idx == -1) {
+          this.user_tabs.push({
+            title: username,
+            name: username,
+            closable: username != this.default_user
+          });
+        }
+        this.active_user = username;
+      },
+      removeUserTab(username) {
+        var idx = this.user_tabs.findIndex((e) => e.name === username);
+        //存在すれば、削除
+        if (idx != -1) {
+          this.user_tabs.splice(idx, 1);
+          if (idx >= this.user_tabs.length) {
+            idx = this.user_tabs.length - 1;
+          }
+          this.active_user = this.user_tabs[idx].name;
+        }
+      },
+      onMessageSent: function (event, msg) {
+        var found = this.FindUser(msg);
+
+        found.message_list.unshift(msg);
+      },
+      onQuickReply: function (payload) {
+        console.log(payload);
+        this.chatbot.quickReply(payload);
+      },
+      sendMessage: function (e) {
+        var message = {
+          text: this.inputText,
+          user: this.default_user,
+          reply_user: "bot",
+          origin_user: this.active_user,
+        }
+        Botkit.send(message, e);
+        this.inputText = '';
+      }
+    }
+  })
+</script>
 
 <style>
-  .el-header, .el-footer {
+  .el-header,
+  .el-footer {
     background-color: #B3C0D1;
     color: #333;
     text-align: center;
     line-height: 60px;
   }
-  
+
   .el-aside {
     background-color: #D3DCE6;
     color: #333;
     text-align: center;
   }
-  
+
   .el-main {
     background-color: #E9EEF3;
     color: #333;
     text-align: center;
     height: 100%;
   }
-  
-  
 </style>
 
 </html>
