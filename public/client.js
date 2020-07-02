@@ -18,8 +18,7 @@ var Botkit = {
   },
 
   options: {
-    use_sockets: true,
-    hostUrl:""
+    use_sockets: true
   },
 
   reconnect_count: 0,
@@ -27,17 +26,16 @@ var Botkit = {
   current_user: null,
   element: null, //画面表示オブジェクト
 
-  connect: function (userid) {
+  connect: function (userid, ws_url) {
     var that = this;
-    //外部設定が可能
-    if(that.options.hostUrl){
-      this.config.ws_url = that.options.hostUrl.replace("http","ws");
-    }
     //ユーザーIDの保存
     this.saveLoginUser(userid);
 
     console.log("that.config.ws_url:" + that.config.ws_url);
     // connect to the chat server!
+    if(ws_url){
+      that.config.ws_url = ws_url.replace("http","ws");
+    }
     if (that.options.use_sockets) {
       that.connectWebsocket(that.config.ws_url);
     } else {
