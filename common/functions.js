@@ -20,8 +20,20 @@ module.exports = function(controller) {
         message.channelData.reply_user = bot._config.reference.user.id;
       }
     }
-    
+    if(!message.channelData.groupId){
+      message.channelData.groupId = message.channelData.reply_user;
+    }
+    if(!message.channelData.group){
+      message.channelData.group = [];
+    }
+    if(!message.channelData.group.includes(message.channelData.user)){
+      message.channelData.group.push(message.channelData.user);
+    }
+    if(!message.channelData.group.includes(message.channelData.reply_user)){
+      message.channelData.group.push(message.channelData.reply_user);
+    }
   }
+  
   controller.transferMessage = async function(bot, message){
     controller.fillUser(bot, message);
     console.log("transferMessage===========>",message.channelData.reply_user, message.text);
