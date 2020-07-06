@@ -41,22 +41,22 @@ module.exports = function (controller) {
       message.author = message.user;
       message.data.author = message.user;
     }
-    if (!message.data.author) {
-      if( message.author ){
-        message.data.author = message.author;
-      }else{
-        message.author ="bot";
-        message.data.author = "bot";
-      }
-    }
-    if (!message.data.reply_user) {
-      if( message.reply_user ){
-        message.data.reply_user = message.reply_user;
-      }else{
-        message.reply_user ="bot";
-        message.data.reply_user = "bot";
-      }
-    }
+    // if (!message.data.author) {
+    //   if( message.author ){
+    //     message.data.author = message.author;
+    //   }else{
+    //     message.author ="bot";
+    //     message.data.author = "bot";
+    //   }
+    // }
+    // if (!message.data.reply_user) {
+    //   if( message.reply_user ){
+    //     message.data.reply_user = message.reply_user;
+    //   }else{
+    //     message.reply_user ="bot";
+    //     message.data.reply_user = "bot";
+    //   }
+    // }
     if (!message.data.reply_user && message.reply_user) {
       message.data.reply_user = message.reply_user;
     }   
@@ -122,7 +122,7 @@ module.exports = function (controller) {
     if (message.isTranfering) return;
     //自身へ転送しない
     if (message.author === controller.MMC_UID) return;
-
+    
     //管理センターへ転送
     transferMessage(message, controller.MMC_UID);
   };
@@ -154,6 +154,7 @@ module.exports = function (controller) {
           type: message.type,
           text: message.text,
           isTranfering: true,
+          author: message.author,
           reply_user: message.reply_user,
         },
       };

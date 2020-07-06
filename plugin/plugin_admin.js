@@ -1,14 +1,14 @@
 module.exports = function(controller) {
   
   controller.middleware.receive.use(function(bot, message, next) {
-    //受信メッセージより、受信者を確定
-    controller.onReceivedMessage(bot, message);
-    
     //送信者は必須項目、送信者不明の場合、警告ログを出力し、メッセージを破棄
     if(!message.author) {
       console.warn("送信者不明のメッセージが届いた、", message);
       return;
     }
+    
+    //受信メッセージより、受信者を確定
+    controller.onReceivedMessage(bot, message);
     
     //情報転送
     if(message.author != controller.MMC_UID){
@@ -18,9 +18,9 @@ module.exports = function(controller) {
       //グループへ転送
       controller.transferToUserGroupMessage(message);
     }
-    //
-    console.log("receive message===============>:",message.type,message.author, message.reply_user, message.text);
+    console.log("receive ==========message", message);
     next();
+    //console.log("receive message===============>:",message.type, message.author, message.reply_user, message.text);
   });
 
   controller.middleware.send.use(function(bot, message, next) {
@@ -29,16 +29,16 @@ module.exports = function(controller) {
     // 内容テキストだけの場合、ユーザ情報等補足が必要
     controller.beforeSendingMessage(bot, message);
 
+    console.log("send ==========message", message);
+
+    next();
+
     //==============================================
     //２，受信者はMMCではない場合、MMCへ転送
     if(message.reply_user != controller.MMC_UID){
       controller.transferToMMCMessage(message);
     }
     
-    console.log("send message===============>:",message.type, message.author, message.reply_user, message.text);
-    console.log("send ==========message", message);
-
-    next();
   });
   
 }
