@@ -70,7 +70,7 @@ module.exports = async function (controller) {
 
   async function AddOnTriggerScript(controller, script){
     controller.on(script.events, async function(bot, message) {
-      console.log("AddTriggerScript: ", script);
+      console.log("On Trigger Script received, ★reply=====>: ", script);
       if(script.replys){
         await replyMessage(bot, message, script.replys);
       }

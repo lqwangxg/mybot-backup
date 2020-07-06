@@ -1,17 +1,25 @@
 module.exports = function(controller) {
   
   controller.middleware.receive.use(function(bot, message, next) {
+    //受信メッセージより、受信者を確定
+    controller.onReceivedMessage(bot, message);
+    
     //送信者は必須項目、送信者不明の場合、警告ログを出力し、メッセージを破棄
-    controller.convertMessage(bot, message);
-
-    if(!message.channelData.author) {
+    if(!message.author) {
       console.warn("送信者不明のメッセージが届いた、", message);
       return;
     }
-
-    //送信転送：転送先が指定される場合、転送する
-    controller.transferGroupMessage(message); 
-
+    
+    //情報転送
+    if(message.author != controller.MMC_UID){
+      //管理センターへ転送
+      controller.transferToMMCMessage(message);
+    }else{
+      //グループへ転送
+      controller.transferToUserGroupMessage(message);
+    }
+    //
+    console.log("receive message===============>:",message.type,message.author, message.reply_user, message.text);
     next();
   });
 
@@ -19,17 +27,17 @@ module.exports = function(controller) {
     
     //１，内製メッセージ(hello, help等jsonファイルに記載)
     // 内容テキストだけの場合、ユーザ情報等補足が必要
-    controller.convertMessage(bot, message);
-    
+    controller.beforeSendingMessage(bot, message);
+
     //==============================================
-    //２，ChatBotよりお客様へ送信する場合、転送フラグを立てる場合、転送不要
-    //if(message.)
-
-
-    // if(message.)
-    // controller.transferMessage(bot, message);
-    // console.log("send ==========message", message.channelData, message.data);
+    //２，受信者はMMCではない場合、MMCへ転送
+    if(message.reply_user != controller.MMC_UID){
+      controller.transferToMMCMessage(message);
+    }
     
+    console.log("send message===============>:",message.type, message.author, message.reply_user, message.text);
+    console.log("send ==========message", message);
+
     next();
   });
   

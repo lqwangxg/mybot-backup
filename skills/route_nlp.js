@@ -8,7 +8,7 @@ module.exports = function(controller) {
   controller.on('user_say,message,text',  onUnknowMessage);
   
   async function onUnknowMessage(bot, message){
-    console.log(`onUnknowMessage :${message.type}, ${message.user} `);
+    console.log(`onUnknowMessage :${message.type}, ${message.user} `, message);
     if (message.origin_user && message.user === controller.MMC_UID &&  message.user != message.origin_user){
       //admin ->bot -> user
       controller.trigger('fallback', bot, message);
