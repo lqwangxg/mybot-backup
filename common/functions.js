@@ -124,7 +124,7 @@ module.exports = function (controller) {
     if (message.author === controller.MMC_UID) return;
     
     //管理センターへ転送
-    transferMessage(message, controller.MMC_UID);
+    transferMessage(message, controller.MMC_UID, controller.MMC_UID);
   };
 
   controller.transferToUserGroupMessage = async function (message) {
@@ -139,10 +139,10 @@ module.exports = function (controller) {
       if (selfId === toId || "bot" === toId) return;
       
       //お客様へ転送
-      transferMessage(message, toId);      
+      transferMessage(message, toId, 'group');      
     });
   };
-  async function transferMessage (message, destId) {
+  async function transferMessage (message, destId, transferType) {
     let client = controller.botClients.find((u) => destId === u.id);
     if (client) {
       let newMessage = {
@@ -154,6 +154,7 @@ module.exports = function (controller) {
           type: message.type,
           text: message.text,
           isTranfering: true,
+          transferType: transferType,
           author: message.author,
           reply_user: message.reply_user,
         },
