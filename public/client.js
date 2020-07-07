@@ -192,7 +192,7 @@ var Botkit = {
     }
 
     var message = {
-      type: msg.type ? msg.type : "user_say",
+      type: msg.type ? msg.type : "message",
       user: that.current_user.id,
       user_profile: that.current_user,
       channel: this.options.use_sockets

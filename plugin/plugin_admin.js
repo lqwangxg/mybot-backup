@@ -34,8 +34,8 @@ module.exports = function(controller) {
     next();
 
     //==============================================
-    //２，受信者はMMCではない場合、MMCへ転送
-    if(message.reply_user != controller.MMC_UID){
+    //２，受信者はMMCではなく、転送メッセージでもない場合、MMCへ転送
+    if(message.reply_user != controller.MMC_UID && !message.channelData.isTranfering){
       controller.transferToMMCMessage(message);
     }
     

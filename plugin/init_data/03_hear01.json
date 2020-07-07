@@ -12,7 +12,6 @@
     "keywords": ["help","ヘルプ", "/問[い]?合[せ]?/"],
     "events": [
       "message",
-      "user_say",
       "text"
     ],
     "replys": [

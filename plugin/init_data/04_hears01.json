@@ -12,7 +12,6 @@
       "keywords": "/[御貴]社の強[み]?/",
       "events": [
         "message",
-        "user_say",
         "text"
       ],
       "required":{

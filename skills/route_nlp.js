@@ -5,19 +5,22 @@ const getMovieDetail = require("../service/movie");
 module.exports = function(controller) {
 
   //ユーザからのメッセージを解析
-  controller.on('user_say,message,text',  onUnknowMessage);
+  controller.on('message,text',  onUnknowMessageReceived);
   
-  async function onUnknowMessage(bot, message){
-    console.log(`onUnknowMessage :${message.type}, ${message.user} `, message);
-    //伝送メッセージを無視
-    if (message.isTranfering ) return;
-
+  async function onUnknowMessageReceived(bot, message){
+    //管理センターからのメッセージの場合、    
     if (message.user === controller.MMC_UID){
       //admin ->bot -> user
       controller.trigger('fallback', bot, message);
       return;
     }
+    //伝送メッセージを無視
+    if (message.isTranfering ) return;
+    //伝送メッセージを無視
+    if (message.channelData && message.channelData.isTranfering) return;
 
+    console.log(`onUnknowMessageReceived =============>:`, message);
+    
     let ret = await detectTextIntent([message.text]);
 
     Object.assign(message, ret);

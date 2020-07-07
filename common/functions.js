@@ -37,26 +37,15 @@ module.exports = function (controller) {
       message.data.text = message.text;
     }
     
-    if(message.user){
+    if(message.user && !message.author){
       message.author = message.user;
       message.data.author = message.user;
     }
-    // if (!message.data.author) {
-    //   if( message.author ){
-    //     message.data.author = message.author;
-    //   }else{
-    //     message.author ="bot";
-    //     message.data.author = "bot";
-    //   }
-    // }
-    // if (!message.data.reply_user) {
-    //   if( message.reply_user ){
-    //     message.data.reply_user = message.reply_user;
-    //   }else{
-    //     message.reply_user ="bot";
-    //     message.data.reply_user = "bot";
-    //   }
-    // }
+    if (!message.data.author) {
+      if( message.author ){
+        message.data.author = message.author;
+      }
+    }
     if (!message.data.reply_user && message.reply_user) {
       message.data.reply_user = message.reply_user;
     }   
@@ -136,7 +125,7 @@ module.exports = function (controller) {
 
     message.data.group.forEach((toId) => {
       //自身に転送しない,chatbotにも転送しない
-      if (selfId === toId || "bot" === toId) return;
+      if (selfId === toId || "bot" === toId || controller.MMC_UID === toId) return;
       
       //お客様へ転送
       transferMessage(message, toId, 'group');      
