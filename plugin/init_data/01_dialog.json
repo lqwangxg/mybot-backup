@@ -15,12 +15,14 @@
         {
           "title": "はい",
           "payload": "はい",
-          "content_type": "text"
+          "content_type": "text",
+          "comment":"「はい」の選択メニューを表示"
         },
         {
           "title": "匿名",
           "payload": "匿名",
-          "content_type": "text"
+          "content_type": "text",
+          "comment":"「匿名」の選択メニューを表示"
         }
       ],
       "collect":{
@@ -32,20 +34,26 @@
             "thread_name":"question_username"
           },
           {
-            "type": "string",
+            "type":"regex",
+            "pattern":"^(.+)(です|である)?$",
+            "thread_name":"question_username_confirm"
+          },
+          {
             "default":"true",
             "pattern": "default",
-            "thread_name":"default"
+            "thread_name":"question_mail",
+            "comment":"=====defaultが匿名として、メールアドレスの入力促進へ======"
           }
         ]
       }
     },
-    {"type": "comment", "data":"====================================="},
+    {"comment":"===上記質問に対して、「はい」以外の回答を頂く場合、question_contentへ===="},
     { 
       "type": "action",
-      "action":"question_content"
+      "action":"question_content",
+      "comment":"===defaultの場合、question_contentへ移動======"
     },
-    {"type": "comment", "data":"====================================="},
+    {"comment":"===姓名入力待ちダイアログ↓========================="},
     { 
       "type": "question",
       "text":"「姓　名」の形でご入力をお願い致します。例：桃　太郎",
@@ -55,26 +63,25 @@
           {
             "type":"regex",
             "pattern":".+\\s+.+",
-            "thread_name":"question_username_confirm"
+            "thread_name":"question_username_confirm",
+            "comment":"=====姓名入力確認へ======"
           },
           {
             "default":"true",
             "pattern": "default",
-            "thread_name":"question_username"
+            "thread_name":"question_mail",
+            "comment":"=====defaultが必須だと思います。======"
           }
         ]
       },
-      "thread_name":"question_username"
+      "thread_name":"question_username",
+      "comment":"======姓名入力待ちダイアログ↑==========="
     },
-    {"type": "comment", "data":"====================================="},
-    { 
-      "type": "action",
-      "action":"question_username_confirm",
-      "thread_name":"question_username"
-    },
+
+    {"comment":"======question_username_confirm姓名入力確認↓============="},
     {
       "type": "question", 
-      "text": "お客様の名前は「{{vars.username}}」で、間違いないでしょうか?",
+      "text": "御姓名は「{{vars.username}}」で、間違いないでしょうか?",
       "quick_replies": [
         {
           "title": "はい",
@@ -92,40 +99,32 @@
         "options":[
           {
             "type": "string",
-            "pattern":"はい",
-            "thread_name":"question_mail"
-          },
-          {
-            "type": "string",
             "pattern":"いいえ",
             "thread_name":"question_username"
           },
           {
             "default":"true",
             "pattern": "default",
-            "thread_name":"question_username_confirm"
+            "thread_name":"question_mail",
+            "comment":"=====「いいえ」以外がはいとします======"
           }
         ]
       },
       "thread_name":"question_username_confirm"
     },
-    {"type": "comment", "data":"====================================="},
-    { 
-      "type": "action",
-      "action":"question_mail",
-      "thread_name":"question_username_confirm"
-    },
+    {"comment":"=====メール入力促進ダイアログ=================="},
     {
       "type": "question", 
       "before": [
         {
           "key":"mail",
           "type":"regex",
-          "pattern":"[a-zA-Z]+[\\w\\.\\-]*@[a-zA-Z]+[\\w\\.\\-]*[a-zA-Z]+",
-          "thread_name":"question_telno"
+          "pattern":"^[a-zA-Z]+[\\w\\.\\-]*@[a-zA-Z]+[\\w\\.\\-]*[a-zA-Z]+$",
+          "thread_name":"question_telno",
+          "comment":"=====メール入力確定前の入力チェック？？？TODO:beforeチェック======"
         }
       ],
-      "text": "続いて、メールアドレスを教えていただけませんか？",
+      "text": "メールアドレスを教えていただけませんか？",
       "quick_replies": [
         {
           "title": "回答無し",
@@ -138,7 +137,7 @@
         "options":[
           {
             "type":"regex",
-            "pattern":"[a-zA-Z]+[\\w\\.\\-]*@[a-zA-Z]+[\\w\\.\\-]*[a-zA-Z]+",
+            "pattern":"^[a-zA-Z]+[\\w\\.\\-]*@[a-zA-Z]+[\\w\\.\\-]*[a-zA-Z]+$",
             "thread_name":"question_mail_confirm"
           },
           {
@@ -148,13 +147,25 @@
           },
           {
             "default":"true",
-            "thread_name":"question_mail_confirm"
+            "pattern": "default",
+            "thread_name":"question_mail_invalid",
+            "comment":"=====defaultが必須だと思います。======"
           }
         ]
       },
       "thread_name":"question_mail"
     },
-    {"type": "comment", "data":"====================================="},
+    {
+      "type": "message", 
+      "text": "メールアドレス型式が不正❌です。",
+      "thread_name":"question_mail_invalid"
+    },
+    { 
+      "type": "action",
+      "action":"question_mail",
+      "thread_name": "question_mail_invalid"
+    },
+    {"comment":"====================================="},
     { 
       "type": "action",
       "action":"question_mail_confirm",
@@ -162,7 +173,7 @@
     },
     {
       "type": "question", 
-      "text": "お客様のメールアドレスは「{{vars.mail}}」で、間違いないでしょうか?",
+      "text": "メールアドレスは「{{vars.mail}}」で、間違いないでしょうか?",
       "quick_replies": [
         {
           "title": "はい",
@@ -180,33 +191,24 @@
         "options":[
           {
             "type": "string",
-            "pattern":"はい",
-            "thread_name":"question_telno"
-          },
-          {
-            "type": "string",
             "pattern":"いいえ",
             "thread_name":"question_mail"
           },
           {
             "default":"true",
             "pattern": "default",
-            "thread_name":"question_mail_confirm"
+            "thread_name":"question_telno",
+            "comment":"=====「いいえ」以外は「はい」として次の電話へ======"
           }
         ]
       },
       "thread_name":"question_mail_confirm"
     },
     
-    {"type": "comment", "data":"====================================="},
-    { 
-      "type": "action",
-      "action":"question_telno",
-      "thread_name": "question_mail_confirm"
-    },
+    {"comment":"======電話入力促進ダイアログ↓==============="},
     {
       "type": "question", 
-      "text": "続いて、お電話番号を教えていただけませんか？",
+      "text": "お電話番号を教えていただけませんか？",
       "quick_replies": [
         {
           "title": "回答無し",
@@ -219,7 +221,7 @@
         "options":[
           {
             "type":"regex",
-            "pattern":"\\d+[\\d\\-]+\\d+",
+            "pattern":"^\\d+[\\d\\-]+\\d+$",
             "thread_name":"question_all_confirm"
           },
           {
@@ -230,18 +232,23 @@
           {
             "default":"true",
             "pattern": "default",
-            "thread_name":"question_all_confirm"
+            "thread_name":"question_tel_invalid"
           }
         ]
       },
       "thread_name":"question_telno"
     },
-    {"type": "comment", "data":"====================================="},
+    {
+      "type": "message", 
+      "text": "電話番号の型式が不正❌です。+0-9のみ入力可能です。",
+      "thread_name":"question_tel_invalid"
+    },
     { 
       "type": "action",
-      "action":"question_all_confirm",
-      "thread_name": "question_telno"
+      "action":"question_telno",
+      "thread_name": "question_tel_invalid"
     },
+    {"comment":"====================================="},
     {
       "type": "question", 
       "text": "「{{vars.username}}」様のメールアドレスは「{{vars.mail}}」で、電話番号は「{{vars.telno}}」で、よろしいでしょうか?",
@@ -293,21 +300,31 @@
           {
             "default":"true",
             "pattern": "default",
-            "thread_name":"question_content"
+            "thread_name":"question_all_confirm_invalid"
           }
         ]
       },
       "thread_name":"question_all_confirm"
     },
-    {"type": "comment", "data":"====================================="},
+    {
+      "type": "message", 
+      "text": "ご入力内容の確認に理解できておりません、もう一度ご確認をお願いします。",
+      "thread_name":"question_all_confirm_invalid"
+    },
     { 
       "type": "action",
-      "action":"question_content",
-      "thread_name": "question_all_confirm"
+      "action":"question_all_confirm",
+      "thread_name": "question_all_confirm_invalid"
+    },
+    {"comment":"====================================="},
+    {
+      "type": "message", 
+      "text": "「{{vars.username}}」様　ありがとうございました。お客様の個人情報を慎重に扱いさせて頂きます。",
+      "thread_name":"question_content"
     },
     {
       "type": "question", 
-      "text": "お問い合わせ内容は何でしょうか?",
+      "text": "今回、「{{vars.username}}」様のお問い合わせ内容は何でしょうか?",
       "quick_replies": [
         {
           "title": "会社案内",
@@ -379,6 +396,42 @@
       },
       "thread_name":"question_content"
     },
+    { 
+      "type": "action",
+      "action":"question_username_confirm",
+      "thread_name":"question_username",
+      "comment":"=====姓名入力確認へ======"
+    },
+    { 
+      "type": "action",
+      "action":"question_mail",
+      "thread_name":"question_username_confirm",
+      "comment":"=====姓名入力確認後、メール入力促進======"
+    },
+    { 
+      "type": "action",
+      "action":"question_mail_confirm",
+      "thread_name": "question_mail",
+      "comment":"=====メール入力後、メール入力確認======"
+    },
+    { 
+      "type": "action",
+      "action":"question_telno",
+      "thread_name": "question_mail_confirm",
+      "comment":"=====メール入力確認後、電話番号入力促進======"
+    },
+    { 
+      "type": "action",
+      "action":"question_all_confirm",
+      "thread_name": "question_telno",
+      "comment":"=====電話番号入力後、全情報入力確認======"
+    },
+    { 
+      "type": "action",
+      "action":"question_content",
+      "thread_name": "question_all_confirm",
+      "comment":"=====電話番号入力後、問合せ情報入力促進======"
+    },
     {
       "type": "message", 
       "text": "MBP SMARTEC株式会社",
@@ -425,7 +478,7 @@
     },
     {
       "type": "message", 
-      "text": "「{{vars.username}}」様のお問い合わせ内容「{{question_content}}」に只今調べます、少々お待ち下さい"
+      "text": "お問い合わせ内容「{{question_content}}」に只今調べます、少々お待ち下さい"
     }
   ]
 }
