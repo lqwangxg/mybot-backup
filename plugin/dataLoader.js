@@ -188,7 +188,7 @@ module.exports = async function (controller) {
         quick_replies:script.quick_replies
       }, script.collect.options, script.collect.key)
     }
-    console.log("addAsk key====================>:", script.collect.key);
+    //console.log("addAsk key====================>:", script.collect.key);
     await onVarChange(convo, script.collect.key);
   }
   async function addQuestion(convo, script){
@@ -219,7 +219,7 @@ module.exports = async function (controller) {
         quick_replies:script.quick_replies
       }, script.collect.options, script.collect.key, script.thread_name)
     }
-    console.log("addQuestion key=========>:", script.collect.key, "==next==>", script.thread_name);
+    //console.log("addQuestion key=========>:", script.collect.key, "==next==>", script.thread_name);
     await onVarChange(convo, script.collect.key);
   }
   async function addMessage(convo, script){
@@ -232,13 +232,17 @@ module.exports = async function (controller) {
       convo.addMessage(
         {
           user: convo.id,
-          text:script.text
+          text: script.text,
+          url: script.url,
+          file: script.file
         }, 
         script.thread_name);
     }else{
       convo.addMessage({
         user: convo.id,
-        text:script.text
+        text:script.text,
+        url: script.url,
+        file: script.file
       });
     }
   }
@@ -248,7 +252,7 @@ module.exports = async function (controller) {
       return;
     }
 
-    console.log("addBefore=================from=> :", thread_name, "==>next:", before.thread_name)
+    //console.log("addBefore=================from=> :", thread_name, "==>next:", before.thread_name)
     if(Array.isArray(before)){
       before.forEach(before=>{
         addBefore(convo, before, thread_name);
@@ -257,7 +261,7 @@ module.exports = async function (controller) {
       
       //指定Threadへ飛ばす前の処理
       await convo.before(thread_name, async (convoBefore, bot)=>{
-        console.log("before======> :", thread_name, before.thread_name, controller.vars)
+        //console.log("before======> :", thread_name, before.thread_name, controller.vars)
         
         let varValue = "";
         //対応変数がまだない場合、処理しない
@@ -266,19 +270,19 @@ module.exports = async function (controller) {
         }else if(convoBefore.vars[before.key]){
           varValue = convoBefore.vars[before.key];
         }
-        console.log("before=============> :", thread_name, before.thread_name, varValue, convoBefore);
+        //console.log("before=============> :", thread_name, before.thread_name, varValue, convoBefore);
         if(!varValue)return;
 
         var option = convertToRegex(before);
         //入力チェック正常の場合、before.thread_nameへ
         if(option.type==="regex" && option.pattern.test(varValue)){
-          console.log("before======> :",thread_name, " goto==> ",before.thread_name);
+          //console.log("before======> :",thread_name, " goto==> ",before.thread_name);
           convoBefore.gotoThread(before.thread_name);
           return;
         }
         //入力チェック正常の場合、before.thread_nameへ
         if(option.type==="string" && option.pattern === varValue){
-          console.log("before======> :",thread_name, " goto==> ",before.thread_name);
+          //console.log("before======> :",thread_name, " goto==> ",before.thread_name);
           convoBefore.gotoThread(before.thread_name);
           return;
         }
@@ -376,7 +380,8 @@ module.exports = async function (controller) {
       await bot.reply(message, {
         type:"text",
         text: replys.text,
-        quick_replies: replys.quick_replies
+        quick_replies: replys.quick_replies,
+        file: replys.file
       });
       return;
     }

@@ -383,12 +383,20 @@
       "type": "message", 
       "text": "MBP SMARTEC株式会社",
       "url": "http://112.126.67.102:30006/about-us/",
+      "file": {
+        "name": "awesome",
+        "url": "https://github.com/lqwangxg/resources/blob/master/gif/happy.gif?raw=true"
+      },
       "thread_name":"content_company"
     },
     {
       "type": "message", 
       "text": "IMバージョンアップ案件をご紹介致します。",
       "url": "http://112.126.67.102:30006/si-service/",
+      "file": {
+        "name": "awesome",
+        "url": "https://github.com/lqwangxg/resources/blob/master/gif/happy.gif?raw=true"
+      },
       "thread_name":"content_si"
     },
     {

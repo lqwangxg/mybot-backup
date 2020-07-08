@@ -18,7 +18,11 @@
       {
         "text": [
           "どうぞ、ご用件を聞かせてください。"
-        ]
+        ],
+        "file": {
+          "name": "awesome",
+          "url": "https://github.com/lqwangxg/resources/blob/master/gif/happy.gif?raw=true"
+        }
       }
     ]
   }

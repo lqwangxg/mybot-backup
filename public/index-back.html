@@ -1,0 +1,201 @@
+<html>
+    <head>
+        <title>Botkit On VUE</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js"></script>
+        <script src="https://cdn.rawgit.com/showdownjs/showdown/1.7.4/dist/showdown.min.js"></script>
+        <link rel="stylesheet" href="/css/styles.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- import Vue Element -->
+        <script src="https://unpkg.com/vue/dist/vue.js"></script>
+        <!-- import Vue Element UI -->
+        <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+        
+    </head>
+    <body >
+      <div class="wrapper">
+        <div id="message_window">
+          <el-container>
+            <el-header>MBPSMARTEC CHATBOT v0.1</el-header>
+            <el-container>
+            <el-aside width="200px">
+              <h1>{{userid}} 様 <br>{{greeting}}</h1>
+              <hr>
+              <div v-for="n in 5 " >
+                <el-alert type="success">{{n}}回瞬間の思い出</el-alert>
+              </div>
+            </el-aside>
+            <el-main>    
+              <section class="section">    
+                <div v-for="msg in message_list" >
+                  <div v-if="msg.isTyping" class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <div v-if="msg.type === 'message'">
+                    <el-row  style="float: left;">
+                      <el-col :span="8">
+                        ChatBot:                       
+                      </el-col>
+                      <el-col :span="16">
+                        <div class="grid-content bg-purple-light">
+                          <el-alert :title="msg.text" type="success"  :closable="false"></el-alert>
+                          <div v-for="reply in msg.quick_replies" >
+                            <el-button type="primary" plain @click="onQuickReply(reply.payload)">{{ reply.title }}</el-button>
+                          </div>
+                        </div>
+                      </el-col>       
+                    </el-row>              
+                  </div>
+                  <div v-else>
+                    <el-row style="float: right;"> 
+                      <el-col :span="8" style="float: right;">
+                        {{msg.user? msg.user : 'user'}}:
+                      </el-col>
+                      <el-col :span="16">
+                        <div class="grid-content bg-purple-light">
+                          <el-alert :title="msg.text" type="success"  :closable="false"></el-alert><br>
+                          <div v-for="reply in msg.quick_replies" >
+                            <el-button type="primary" plain>{{ reply.title }}</el-button>
+                          </div>
+                        </div>
+                      </el-col>                   
+                    </el-row>      
+                  </div>
+                </div> 
+              </section>              
+            </el-main>
+          </el-container>
+            <el-footer>
+              <form>
+              <input type="text" autocomplete="off" id="messenger_input" placeholder="Type here..." v-model="inputText" />
+              <button @click="sendMessage" >Send</button>
+              
+            </form>
+            </el-footer>
+          </el-container>
+        </div>
+      </div>
+      <script src="/client.js"></script>
+    </body>
+
+    <script>
+      
+      //import Botkit from "./"
+      var v = new Vue({
+        el: '#message_window',
+        data: function() {
+          return {
+            chatbot: Botkit,
+            chat_connected: false,
+            inputText:'',
+            userid:'',
+            message_list: []
+          }
+        },
+        mounted : function(){
+          this.chatbot.element = this;
+          this.chatbot.on('disconnected', this.onDisConnected);
+          this.chatbot.on('connected', this.onConnected);
+          this.chatbot.on('message', this.onReceived);
+          this.chatbot.on('text', this.onReceived);
+          this.chatbot.on('sent', this.onMessageSent);
+          this.userid = Math.random().toString().substr(2,6);
+          this.chatbot.connect(this.userid);
+        },
+        computed: {
+          connect_comment:()=>{
+            var msg = '';
+            if(this.chat_connected){
+              msg = "接続中。。。";
+            }else{
+              msg = "切断された... 接続をやり直します。";
+            }
+            return msg;
+          },
+          greeting: ()=>{
+            const now = new Date();
+            if(now.getHours()<12){
+              return "おはようございます。"
+            }else{
+              return "こんにちは。"
+            }
+          }
+        },
+        methods:{
+          onConnected:function(event, msg){
+            this.chat_connected = true;
+            const message = this.userid + 'がサーバに接続できました。';
+            this.$message({
+              message: message,
+              type: 'success'
+            });
+            // this.chatbot.sendEvent({
+            //   name: 'connected'
+            // });
+            //this.message_list.unshift(message);//頭から追加
+          },
+          onDisConnected:function(event, msg){
+            this.chat_connected = false;
+            this.$message({
+              message: 'ネットワークが切断されました。',
+              type: 'error'
+            });
+          },
+          onReceived:function(event, msg){
+            this.message_list.unshift(msg);
+          },
+          onMessageSent:function(event, msg){
+            if(msg.text.match(/^clear|cls|クリア|ｸﾘｱ$/i)){
+              this.message_list.length = 0;
+              while(this.message_list.length>0){
+                this.message_list.shift();//削除でクリア
+              }
+            }else{
+              this.message_list.unshift(msg);//頭から追加
+            }
+          },
+          onQuickReply:function(payload){
+            console.log(payload);
+            this.chatbot.quickReply(payload);
+          },
+          sendMessage : function(e){
+            var message ={
+              text: this.inputText,
+              user: this.userid,
+              reply_user: "bot"
+            }
+            Botkit.send(message, e);      
+            this.inputText = '';
+          }
+        }
+      })
+    </script>
+
+<style>
+  .el-header, .el-footer {
+    background-color: #B3C0D1;
+    color: #333;
+    text-align: center;
+    line-height: 60px;
+  }
+  
+  .el-aside {
+    background-color: #D3DCE6;
+    color: #333;
+    text-align: center;
+  }
+  
+  .el-main {
+    background-color: #E9EEF3;
+    color: #333;
+    text-align: center;
+    height: 100%;
+  }
+  
+  
+</style>
+
+</html>

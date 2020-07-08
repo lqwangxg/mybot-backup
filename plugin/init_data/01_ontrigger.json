@@ -12,10 +12,13 @@
     ],
     "replys": [
       {
-        "text":
-          "ようこそ！MBPSmartecのボットです。なんでも大丈夫、僕とチャットしましょう！"
+        "text": "ようこそ！MBPSmartecのボットです。なんでも大丈夫、僕とチャットしましょう！",
+        "file": {
+          "name": "awesome",
+          "url": "https://github.com/lqwangxg/resources/blob/master/gif/happy.gif?raw=true"
+        }
       }
     ],
-    "dialog":"confirm_userinfo"
+    "dialog": "confirm_userinfo"
   }
 }
