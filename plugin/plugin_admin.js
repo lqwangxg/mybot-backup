@@ -18,7 +18,7 @@ module.exports = function(controller) {
       //グループへ転送
       controller.transferToUserGroupMessage(message);
     }
-    console.log("receive ==========message", message);
+    //console.log("receive ==========message", message);
     next();
     //console.log("receive message===============>:",message.type, message.author, message.reply_user, message.text);
   });
@@ -29,7 +29,7 @@ module.exports = function(controller) {
     // 内容テキストだけの場合、ユーザ情報等補足が必要
     controller.beforeSendingMessage(bot, message);
 
-    console.log("send ==========message", message);
+    //console.log("send ==========message", message);
 
     next();
 

@@ -10,6 +10,7 @@ module.exports = async function (controller) {
   if(!controller.vars){
     controller.vars = {};
   }
+  
   //====================================================
   fs.readdirSync(initQADataPath).forEach((file) => {
     var filePath = buildPath.join(initQADataPath, file);
@@ -147,7 +148,8 @@ module.exports = async function (controller) {
     addQuestion(convo, script);
     
     addBefore(convo, script.before, script.thread_name);
-    addAfter(convo, script);    
+    addAfter(convo, script);
+    addVarValid(script);
   }
   //====================================================  
   async function addAction(convo, script){
@@ -169,10 +171,10 @@ module.exports = async function (controller) {
 
     if(Array.isArray(script.collect.options)){
       script.collect.options = script.collect.options.map(option=>{
-        return convertAnswerHandler(option);
+        return toHandler(option);
       });
     }else{
-      script.collect.options = convertAnswerHandler(script.collect.options);
+      script.collect.options = toHandler(script.collect.options);
     }
     //console.log("addAsk===================> :", confirm)
     if(!script.collect || !script.collect.options || script.collect.options.length === 0){
@@ -198,10 +200,10 @@ module.exports = async function (controller) {
     if(script.collect && script.collect.options){
       if(Array.isArray(script.collect.options)){
         script.collect.options = script.collect.options.map(option=>{
-          return convertAnswerHandler(option);
+          return toHandler(option);
         });
       }else{
-        script.collect.options = convertAnswerHandler(script.collect.options);
+        script.collect.options = toHandler(script.collect.options);
       }
     }
 
@@ -246,8 +248,23 @@ module.exports = async function (controller) {
       });
     }
   }
+  async function addVarValid(script){
+    if("variables" != script.type){
+      return;
+    }
+    if(!controller.validateHandlers){
+      controller.validateHandlers =[];
+    }
+    await convertToRegex(script.valid, (option)=>{
+      let opt = controller.validateHandlers.includes(option);
+      if(!opt){
+        controller.validateHandlers.push(option);
+      }
+    });
+    
+  }
   
-  async function addBefore(convo, before, thread_name){
+  async function addBefore(convo, before, script_thread_name){
     if(!before){
       return;
     }
@@ -255,12 +272,12 @@ module.exports = async function (controller) {
     //console.log("addBefore=================from=> :", thread_name, "==>next:", before.thread_name)
     if(Array.isArray(before)){
       before.forEach(before=>{
-        addBefore(convo, before, thread_name);
+        addBefore(convo, before, script_thread_name);
       });
     }else{
       
       //指定Threadへ飛ばす前の処理
-      await convo.before(thread_name, async (convoBefore, bot)=>{
+      await convo.before(script_thread_name, async (convoBefore, bot)=>{
         //console.log("before======> :", thread_name, before.thread_name, controller.vars)
         
         let varValue = "";
@@ -275,16 +292,28 @@ module.exports = async function (controller) {
 
         var option = convertToRegex(before);
         //入力チェック正常の場合、before.thread_nameへ
-        if(option.type==="regex" && option.pattern.test(varValue)){
+        if(option.type==="regex"){
+          if(option.pattern.test(varValue)){
+            //console.log("before======> :",thread_name, " goto==> ",before.thread_name);
+            convoBefore.gotoThread(before.thread_name);
+          }else{
+            if(before.fault_thread_name){
+              convoBefore.gotoThread(before.fault_thread_name);
+            }else{
+              convoBefore.gotoThread(script_thread_name);
+            }
+          }
+        }else if(option.type==="string"){
           //console.log("before======> :",thread_name, " goto==> ",before.thread_name);
-          convoBefore.gotoThread(before.thread_name);
-          return;
-        }
-        //入力チェック正常の場合、before.thread_nameへ
-        if(option.type==="string" && option.pattern === varValue){
-          //console.log("before======> :",thread_name, " goto==> ",before.thread_name);
-          convoBefore.gotoThread(before.thread_name);
-          return;
+          if(option.pattern === varValue){
+            convoBefore.gotoThread(before.thread_name);
+          }else{
+            if(before.fault_thread_name){
+              convoBefore.gotoThread(before.fault_thread_name);
+            }else{
+              convoBefore.gotoThread(script_thread_name);
+            }
+          }
         }
       });
     }
@@ -313,35 +342,50 @@ module.exports = async function (controller) {
 
   async function onVarChange(convo, key){
     if("string" === typeof(key)){
-      convo.onChange(key, async(response)=>{
-        controller.vars[key] = response;
-        //console.log(`onVarChange===========================[${key}]:[${JSON.stringify(response)}]`);
+      convo.onChange(key, async(response, convo, bot)=>{
+        let value = response;
+        let v = controller.validateHandlers.find(k=>k.key===key);
+        if(v){
+          if(v.pattern.test(value)){
+            controller.vars[key] =value;
+          }else{
+            controller.vars[key] ="";
+            convo.gotoThread(v.fault_thread_name);
+          }
+        }else{
+          controller.vars[key] = response;
+        }
+        //let kv = 
+        console.log(`onVarChange===================[${key}]:[${controller.vars[key]}], ${response}`);
       });
     }else if(Array.isArray(key)){
-      key.forEach(key => {
-        convo.onChange(key, async(response)=>{
-          controller.vars[key] = response;
-          //console.log(`onVarChange=========================[${key}]:[${JSON.stringify(response)}]`);
-        });
-      });
+      key.forEach(k => onVarChange(convo, k));
     }
   }
 
   //====================================================
-  function convertToRegex(option){
+  function convertToRegex(option, callback){
     if(!option)return option;
-    
+
+    if (Array.isArray(option)){
+      option = option.map(op => convertToRegex(op, callback));
+      return option;
+    }
+
     if (typeof(option) === 'string' && option.match(/^\/(.+)\/$/)) {
+      //文字列にRegexパターンが存在する場合、Regexとする
       option = new RegExp(option.substring(1,option.length-1));
     }else if(option.type==="regex" && option.pattern){
       option.pattern = new RegExp(option.pattern);
-    }else if (Array.isArray(option)){
-      option = option.map(op => convertToRegex(op));
     }
-    //console.log("convertToRegex:",   option)
+    
+    if(callback){
+      callback(option);
+    }
+
     return option;
   }
-  function convertAnswerHandler(option){
+  function toHandler(option){
     if(!option)return option;
 
     // Regexの場合、Regexに変換
@@ -349,7 +393,7 @@ module.exports = async function (controller) {
 
     if(option.thread_name){
       option.handler = async(response, convo, bot) => {
-        console.log("convertAnswerHandler answer============>>>>>>>:", option.thread_name, response);
+        console.log("ask/question callback_handler answer============>>>>>>>:", option.thread_name, response);
         await convo.gotoThread(option.thread_name);
       }
     }

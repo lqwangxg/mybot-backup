@@ -39,8 +39,7 @@
             "thread_name":"question_username_confirm"
           },
           {
-            "default":"true",
-            "pattern": "default",
+            "default":"true",            
             "thread_name":"question_mail",
             "comment":"=====defaultが匿名として、メールアドレスの入力促進へ======"
           }
@@ -67,8 +66,7 @@
             "comment":"=====姓名入力確認へ======"
           },
           {
-            "default":"true",
-            "pattern": "default",
+            "default":"true",            
             "thread_name":"question_mail",
             "comment":"=====defaultが必須だと思います。======"
           }
@@ -103,8 +101,7 @@
             "thread_name":"question_username"
           },
           {
-            "default":"true",
-            "pattern": "default",
+            "default":"true",            
             "thread_name":"question_mail",
             "comment":"=====「いいえ」以外がはいとします======"
           }
@@ -115,15 +112,6 @@
     {"comment":"=====メール入力促進ダイアログ=================="},
     {
       "type": "question", 
-      "before": [
-        {
-          "key":"mail",
-          "type":"regex",
-          "pattern":"^[a-zA-Z]+[\\w\\.\\-]*@[a-zA-Z]+[\\w\\.\\-]*[a-zA-Z]+$",
-          "thread_name":"question_telno",
-          "comment":"=====メール入力確定前の入力チェック？？？TODO:beforeチェック======"
-        }
-      ],
       "text": "メールアドレスを教えていただけませんか？",
       "quick_replies": [
         {
@@ -136,18 +124,12 @@
         "key":"mail",
         "options":[
           {
-            "type":"regex",
-            "pattern":"^[a-zA-Z]+[\\w\\.\\-]*@[a-zA-Z]+[\\w\\.\\-]*[a-zA-Z]+$",
-            "thread_name":"question_mail_confirm"
-          },
-          {
             "type":"string",
             "pattern":"回答無し",
             "thread_name":"question_telno"
           },
           {
             "default":"true",
-            "pattern": "default",
             "thread_name":"question_mail_invalid",
             "comment":"=====defaultが必須だと思います。======"
           }
@@ -196,7 +178,7 @@
           },
           {
             "default":"true",
-            "pattern": "default",
+            
             "thread_name":"question_telno",
             "comment":"=====「いいえ」以外は「はい」として次の電話へ======"
           }
@@ -220,19 +202,13 @@
         "key":"telno",
         "options":[
           {
-            "type":"regex",
-            "pattern":"^\\d+[\\d\\-]+\\d+$",
-            "thread_name":"question_all_confirm"
-          },
-          {
             "type":"string",
             "pattern":"回答無し",
             "thread_name":"question_all_confirm"
           },
           {
             "default":"true",
-            "pattern": "default",
-            "thread_name":"question_tel_invalid"
+            "thread_name":"question_telno_invalid"
           }
         ]
       },
@@ -241,12 +217,12 @@
     {
       "type": "message", 
       "text": "電話番号の型式が不正❌です。+0-9のみ入力可能です。",
-      "thread_name":"question_tel_invalid"
+      "thread_name":"question_telno_invalid"
     },
     { 
       "type": "action",
       "action":"question_telno",
-      "thread_name": "question_tel_invalid"
+      "thread_name": "question_telno_invalid"
     },
     {"comment":"====================================="},
     {
@@ -299,7 +275,6 @@
           },
           {
             "default":"true",
-            "pattern": "default",
             "thread_name":"question_all_confirm_invalid"
           }
         ]
@@ -479,6 +454,25 @@
     {
       "type": "message", 
       "text": "お問い合わせ内容「{{question_content}}」に只今調べます、少々お待ち下さい"
+    },
+    {
+      "type": "variables", 
+      "valid": [
+        {
+          "key":"mail",
+          "type":"regex",
+          "pattern":"(^[a-zA-Z]+[\\w\\.\\-]*@[a-zA-Z]+[\\w\\.\\-]*[a-zA-Z]+$)|回答無し",
+          "fault_thread_name":"question_mail_invalid",
+          "comment":"=====メール入力確定前の入力チェック？？？TODO:beforeチェック======"
+        },
+        {
+          "key":"telno",
+          "type":"regex",
+          "pattern":"(^\\d+[\\d\\-]+\\d+$)|回答無し",
+          "fault_thread_name":"question_telno_invalid",
+          "comment":"=====メール入力確定前の入力チェック？？？TODO:beforeチェック======"
+        }
+      ]
     }
   ]
 }
