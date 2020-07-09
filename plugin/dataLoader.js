@@ -3,8 +3,9 @@
 let fs = require("fs");
 let buildPath = require("path");
 let initQADataPath = buildPath.join(__dirname, "init_data");
-
+const getFromAPI = require("../service/3rdApi");
 const { BotkitConversation } = require("botkit");
+const Mustache = require('mustache');
 
 module.exports = async function (controller) {
   if(!controller.vars){
@@ -269,7 +270,6 @@ module.exports = async function (controller) {
       return;
     }
 
-    //console.log("addBefore=================from=> :", thread_name, "==>next:", before.thread_name)
     if(Array.isArray(before)){
       before.forEach(before=>{
         addBefore(convo, before, script_thread_name);
@@ -277,15 +277,25 @@ module.exports = async function (controller) {
     }else{
       //指定Threadへ飛ばす前の処理
       await convo.before(script_thread_name, async (convoBefore, bot)=>{
-        let varValue = "";
+    
+        console.log("before====from=> :", script_thread_name)
+        let varValue;
         //対応変数がまだない場合、処理しない
         if(controller.vars[before.key]){
           varValue = controller.vars[before.key];
-        }else if(convoBefore.vars[before.key]){
-          varValue = convoBefore.vars[before.key];
         }
-        if(!varValue)return;
-        if(varValue.type==="event")return;
+        let convoVarValue;
+        if(convoBefore.vars[before.key]){
+          convoVarValue = convoBefore.vars[before.key];
+        }
+        console.log("before===varValue,convoVarValue>", varValue, convoVarValue);
+        if(!varValue && !convoVarValue)return;
+
+        if(!convoVarValue){
+          convoBefore.setVar(before.key, varValue);
+          convoVarValue = varValue;
+        }
+        if(convoVarValue.type==="event")return;
         
         let option = controller.validateHandlers.find(v => v.key===before.key);
         if(!option)return;
@@ -309,19 +319,39 @@ module.exports = async function (controller) {
       return;
     }
     console.log("addAfter======confirm> :", script)
-    
-    let datakey = "datakey";
-    // if(script.keywords){
-    //   datakey = script.keywords;
-    // }else if(script.action){
-    //   datakey = script.action;
-    // }else if(script.thread_name){
-    //   datakey = script.thread_name;
-    // }
-
+    let api = script.after.api;
+    //外部apiを呼出
     convo.after((results, bot)=>{
-      controller.vars[datakey] = results;
-      console.log(`after ==========> key:${datakey}, result:${results}`);
+      if(!api) return; 
+      console.log("after=====================>results,bot:", results, bot);
+
+      let queryString = "";
+      if(api.query){
+        let params = api.query;
+        let kv =[]; 
+        if(Array.isArray(params)){
+          params.forEach(param=>{
+            kv.push(param.name + param.condition + controller.vars[param.var_name]);
+          })
+        }else if(typeof(params)==="object"){
+          kv.push(params.name + params.condition + controller.vars[params.var_name]);
+        }
+        queryString = kv.join("&");
+      }
+      
+      getFromAPI(api, queryString, (result)=>{
+        if(result.Response){
+          const textTempalte =api.callback.text;
+          const text =  Mustache.render(textTempalte, result);
+          result.renderText = text;
+
+          // convo.setVar(api.callback.result_name, result);
+          // convo.setVar(api.callback.detail_name, result.renderText);
+          controller.vars[api.callback.result_name] = result;
+          controller.vars[api.callback.detail_name] = result.renderText;
+        }
+      });
+
     });
   }
 

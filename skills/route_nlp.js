@@ -1,6 +1,6 @@
 const utils = require("../service/utils");
 const detectTextIntent = require("../service/df-intent");
-const getMovieDetail = require("../service/movie");
+//const getMovieDetail = require("../service/movie");
 
 module.exports = function(controller) {
 
@@ -37,19 +37,19 @@ module.exports = function(controller) {
       });
       return;
     }
-    if (message.actionName && message.parameters){
-      //映画の情報を取得する
-      const title = utils.getParameterValue(message, "movie");
-      if(title){
-        const movie = await getMovieDetail(title);
-        onMovieBack(movie, bot, message);
-      }else{
-        console.log("unknown===action:", message.actionName);
-        controller.trigger('unknown', bot, message);
-      }
-    }else{
-      controller.trigger('unknown', bot, message);
-    }
+    // if (message.actionName && message.parameters){
+    //   //映画の情報を取得する
+    //   const title = utils.getParameterValue(message, "movie");
+    //   if(title){
+    //     const movie = await getMovieDetail(title);
+    //     onMovieBack(movie, bot, message);
+    //   }else{
+    //     console.log("unknown===action:", message.actionName);
+    //     controller.trigger('unknown', bot, message);
+    //   }
+    // }else{
+    //   controller.trigger('unknown', bot, message);
+    // }
   }
   
   async function onMovieBack(movie, bot, message){
