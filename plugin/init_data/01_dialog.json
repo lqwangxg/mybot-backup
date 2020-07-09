@@ -177,8 +177,7 @@
             "thread_name":"question_mail"
           },
           {
-            "default":"true",
-            
+            "default":"true",            
             "thread_name":"question_telno",
             "comment":"=====「いいえ」以外は「はい」として次の電話へ======"
           }
@@ -190,6 +189,13 @@
     {"comment":"======電話入力促進ダイアログ↓==============="},
     {
       "type": "question", 
+      "before": [
+        {
+          "key":"telno",
+          "skip_on_valid": true,
+          "thread_name":"question_all_confirm"
+        }
+      ],
       "text": "お電話番号を教えていただけませんか？",
       "quick_replies": [
         {
@@ -463,14 +469,14 @@
           "type":"regex",
           "pattern":"(^[a-zA-Z]+[\\w\\.\\-]*@[a-zA-Z]+[\\w\\.\\-]*[a-zA-Z]+$)|回答無し",
           "fault_thread_name":"question_mail_invalid",
-          "comment":"=====メール入力確定前の入力チェック？？？TODO:beforeチェック======"
+          "comment":"=====メール入力チェック,NGの場合、question_mail_invalidへ======"
         },
         {
           "key":"telno",
           "type":"regex",
           "pattern":"(^\\d+[\\d\\-]+\\d+$)|回答無し",
           "fault_thread_name":"question_telno_invalid",
-          "comment":"=====メール入力確定前の入力チェック？？？TODO:beforeチェック======"
+          "comment":"=====電話番号入力チェック,question_telno_invalid======"
         }
       ]
     }

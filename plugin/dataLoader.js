@@ -275,11 +275,8 @@ module.exports = async function (controller) {
         addBefore(convo, before, script_thread_name);
       });
     }else{
-      
       //指定Threadへ飛ばす前の処理
       await convo.before(script_thread_name, async (convoBefore, bot)=>{
-        //console.log("before======> :", thread_name, before.thread_name, controller.vars)
-        
         let varValue = "";
         //対応変数がまだない場合、処理しない
         if(controller.vars[before.key]){
@@ -287,32 +284,20 @@ module.exports = async function (controller) {
         }else if(convoBefore.vars[before.key]){
           varValue = convoBefore.vars[before.key];
         }
-        //console.log("before=============> :", thread_name, before.thread_name, varValue, convoBefore);
         if(!varValue)return;
-
-        var option = convertToRegex(before);
-        //入力チェック正常の場合、before.thread_nameへ
+        if(varValue.type==="event")return;
+        
+        let option = controller.validateHandlers.find(v => v.key===before.key);
+        if(!option)return;
+        
+        //入力チェック正常、かつ飛ばす区分がTrueの場合、before.thread_nameへ
         if(option.type==="regex"){
-          if(option.pattern.test(varValue)){
-            //console.log("before======> :",thread_name, " goto==> ",before.thread_name);
+          if(option.pattern.test(varValue) && before.skip_on_valid){
             convoBefore.gotoThread(before.thread_name);
-          }else{
-            if(before.fault_thread_name){
-              convoBefore.gotoThread(before.fault_thread_name);
-            }else{
-              convoBefore.gotoThread(script_thread_name);
-            }
           }
         }else if(option.type==="string"){
-          //console.log("before======> :",thread_name, " goto==> ",before.thread_name);
-          if(option.pattern === varValue){
+          if(option.pattern === varValue && before.skip_on_valid){
             convoBefore.gotoThread(before.thread_name);
-          }else{
-            if(before.fault_thread_name){
-              convoBefore.gotoThread(before.fault_thread_name);
-            }else{
-              convoBefore.gotoThread(script_thread_name);
-            }
           }
         }
       });
