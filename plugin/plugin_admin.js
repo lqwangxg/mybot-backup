@@ -1,3 +1,4 @@
+
 module.exports = function(controller) {
   
   controller.middleware.receive.use(function(bot, message, next) {
@@ -6,9 +7,12 @@ module.exports = function(controller) {
       console.warn("送信者不明のメッセージが届いた、", message);
       return;
     }
+    //controller.redis.test(message.author);
     
     //受信メッセージより、受信者を確定
     controller.onReceivedMessage(bot, message);
+    //controller.saveMessageHistory(message);
+    
     
     //情報転送
     if(message.author != controller.MMC_UID){
@@ -28,9 +32,8 @@ module.exports = function(controller) {
     //１，内製メッセージ(hello, help等jsonファイルに記載)
     // 内容テキストだけの場合、ユーザ情報等補足が必要
     controller.beforeSendingMessage(bot, message);
-
-    //console.log("send ==========message", message);
-
+    controller.saveMessageHistory(bot, message);
+    
     next();
 
     //==============================================

@@ -13,14 +13,15 @@ const { BotkitCMSHelper } = require('botkit-plugin-cms');
 const { WebAdapter } = require('botbuilder-adapter-web');
 
 const { MongoDbStorage } = require('botbuilder-storage-mongodb');
+const RedisService= require("./service/redis");
 
 // Load process.env values from .env file
 require('dotenv').config();
 
 let storage = null;
 if (process.env.MONGO_URI) {
-    storage = mongoStorage = new MongoDbStorage({
-        url : process.env.MONGO_URI,
+    storage = new MongoDbStorage({
+        url : process.env.MONGO_URI,        
     });
 }
 
@@ -33,11 +34,12 @@ const controller = new Botkit({
 
     adapter: adapter,
 
-    storage
+    storage: storage
 });
 // クライアント配列
 controller.botClients = [];
 controller.MMC_UID = process.env.MMC_UID;
+controller.redis = new RedisService();
 
 if (process.env.CMS_URI) {
     controller.usePlugin(new BotkitCMSHelper({
@@ -66,6 +68,16 @@ controller.ready(() => {
     controller.loadModules(__dirname + '/features');
     // load traditional developer-created local custom feature modules
     controller.loadModules(__dirname + '/skills');
+    if (controller.storage) {
+      //controller.storage.history = {};
+      controller.storage.ensureConnected().then(
+        (client)=>{
+          console.log("controller.storage.connect============<client>",client);
+          controller.storage.db = client.db(controller.storage.config.database);
+          require("./service/MongoStorage")(controller);   
+        }
+      );
+    }
 
     /* catch-all that uses the CMS to trigger dialogs */
     if (controller.plugins.cms) {

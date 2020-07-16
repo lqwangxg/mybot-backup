@@ -128,7 +128,7 @@ module.exports = function (controller) {
       if (selfId === toId || "bot" === toId || controller.MMC_UID === toId) return;
       
       //お客様へ転送
-      transferMessage(message, toId, 'group');      
+      transferMessage(message, toId, 'group');
     });
   };
   async function transferMessage (message, destId, transferType) {
@@ -153,4 +153,68 @@ module.exports = function (controller) {
       await client.bot.say(newMessage);
     }
   }
+  
+  controller.saveMessageHistory = async function (bot, message){
+    if(!controller.storage)return;
+    if(message.id){
+      controller.trigger("SaveMessage", bot, message);
+    }else{
+      controller.storage.counters.seq(message.author, (error, resp)=>{
+        //let seq = resp;
+        message.id = resp.value.seq;
+        controller.trigger("SaveMessage", bot, message);
+      })
+    }
+  }
+
+  controller.on("SaveMessage", async function(bot, message){
+    
+    if(!message.incoming_message){
+      message.incoming_message = {};
+    }
+    let filter = { author: message.author, id: message.id };
+    let content = {
+      type: message.type,
+      text: message.text,
+      data: message.data,
+      author: message.author,
+      timestamp: message.incoming_message.timestamp?message.incoming_message.timestamp: new Date()
+    }
+    controller.storage.histories.save(filter, content, (error, resp)=>{
+      if(error){
+        throw error;
+      }else if(resp.value){
+        console.log("message.updated=====:" , resp.ok);
+      }else{
+        console.log("message.inserted====:" , resp.ok);
+      }
+    });
+  })
+
+  controller.on("SaveUserProfie", async function(bot, message){
+    let filter = { author: message.author};
+    if(!message.user_profile){
+      message.user_profile = {};
+    }
+    if(!message.incoming_message){
+      message.incoming_message = {};
+    }
+    let content = {
+      name: message.user_profile.name?message.user_profile.name:message.user_profile.id,
+      mail: message.user_profile.mail?message.user_profile.mail:'',
+      telno: message.user_profile.telno?message.user_profile.telno:'',
+      dispname: message.user_profile.dispname?message.user_profile.dispname:'',
+      timestamp: message.incoming_message.timestamp?message.incoming_message.timestamp: new Date()
+    }
+
+    controller.storage.users.save(filter, content, (error, resp)=>{
+      if(error){
+        throw error;
+      }else if(resp.value){
+        console.log("message.updated=====:" , resp.ok);
+      }else{
+        console.log("message.inserted====:" , resp.ok);
+      }
+    });
+  })
 };
