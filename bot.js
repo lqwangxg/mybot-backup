@@ -13,7 +13,6 @@ const { BotkitCMSHelper } = require('botkit-plugin-cms');
 const { WebAdapter } = require('botbuilder-adapter-web');
 
 const { MongoDbStorage } = require('botbuilder-storage-mongodb');
-const RedisService= require("./service/redis");
 
 // Load process.env values from .env file
 require('dotenv').config();
@@ -39,7 +38,6 @@ const controller = new Botkit({
 // クライアント配列
 controller.botClients = [];
 controller.MMC_UID = process.env.MMC_UID;
-controller.redis = new RedisService();
 
 if (process.env.CMS_URI) {
     controller.usePlugin(new BotkitCMSHelper({

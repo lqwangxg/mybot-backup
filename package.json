@@ -16,7 +16,6 @@
     "botkit-plugin-cms": "^1.0.3",
     "dialogflow": "^1.2.0",
     "dotenv": "^7.0.0",
-    "redis": "^3.0.2",
     "vue": "^2.6.11"
   }
 }
