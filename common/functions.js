@@ -24,6 +24,11 @@ module.exports = function (controller) {
     }
   };
 
+  controller.nowTimeStamp = function(){
+    const event = new Date();
+    let datetimeString = event.toLocaleDateString()+ ' '+ event.toLocaleTimeString()+"."+ event.getMilliseconds();
+    return datetimeString;
+  }
   //送信メッセージを準備
   controller.formatMessage = async function (bot, message) {
     //ユーザへの送信メッセージをセンターへ転送
@@ -178,42 +183,54 @@ module.exports = function (controller) {
       text: message.text,
       data: message.data,
       author: message.author,
-      timestamp: message.incoming_message.timestamp?message.incoming_message.timestamp: new Date()
+      timestamp: message.incoming_message.timestamp?message.incoming_message.timestamp: controller.nowTimeStamp()
     }
     controller.storage.histories.save(filter, content, (error, resp)=>{
       if(error){
         throw error;
-      }else if(resp.value){
-        console.log("message.updated=====:" , resp.ok);
-      }else{
-        console.log("message.inserted====:" , resp.ok);
       }
     });
   })
 
   controller.on("SaveUserProfie", async function(bot, message){
-    let filter = { author: message.author};
-    if(!message.user_profile){
-      message.user_profile = {};
+    let filter = { id: message.user};
+    //ユーザ情報存在しない場合、処理終了
+    let user_profile = {}
+    if(message.user_profile){
+      Object.assign(user_profile, message.user_profile);
     }
-    if(!message.incoming_message){
-      message.incoming_message = {};
+    user_profile.id = "";
+    if(message.user){
+      user_profile.id = message.user;
     }
-    let content = {
-      name: message.user_profile.name?message.user_profile.name:message.user_profile.id,
-      mail: message.user_profile.mail?message.user_profile.mail:'',
-      telno: message.user_profile.telno?message.user_profile.telno:'',
-      dispname: message.user_profile.dispname?message.user_profile.dispname:'',
-      timestamp: message.incoming_message.timestamp?message.incoming_message.timestamp: new Date()
+    user_profile.name = "";
+    if(message.username){
+      user_profile.name = message.username;
     }
+    user_profile.mail = "";
+    if(message.mail && message.mail != "回答無し"){
+      user_profile.mail = message.mail
+    }
+    user_profile.telno = "";
+    if(message.telno && message.telno != "回答無し"){
+      user_profile.telno = message.telno
+    }
+    if(message.channel){
+      user_profile.channel = message.channel;
+    }
+    user_profile.timestamp = controller.nowTimeStamp();
 
-    controller.storage.users.save(filter, content, (error, resp)=>{
+    // let content = {
+    //   name: message.username?message.user_profile.name:message.user_profile.id,
+    //   mail: message.user_profile.mail?message.user_profile.mail:'',
+    //   telno: message.user_profile.telno?message.user_profile.telno:'',
+    //   dispname: message.user_profile.dispname?message.user_profile.dispname:'',
+    //   timestamp: message.user_profile.timestamp?message.user_profile.timestamp: new Date()
+    // }
+
+    controller.storage.users.save(filter, user_profile, (error, resp)=>{
       if(error){
         throw error;
-      }else if(resp.value){
-        console.log("message.updated=====:" , resp.ok);
-      }else{
-        console.log("message.inserted====:" , resp.ok);
       }
     });
   })

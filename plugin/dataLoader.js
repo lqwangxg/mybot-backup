@@ -3,7 +3,7 @@
 let fs = require("fs");
 let buildPath = require("path");
 let initQADataPath = buildPath.join(__dirname, "init_data");
-const getFromAPI = require("../service/3rdApi");
+const {getFromAPI, getQueryString} = require("../service/3rdApi");
 const { BotkitConversation } = require("botkit");
 const Mustache = require('mustache');
 
@@ -319,42 +319,32 @@ module.exports = async function (controller) {
       return;
     }
     console.log("addAfter======confirm> :", script)
-    let api = script.after.api;
-    //外部apiを呼出
+    
     convo.after((results, bot)=>{
-      if(!api) return; 
-      console.log("after=====================>results,bot:", results, bot);
-
-      let queryString = "";
-      if(api.query){
-        let params = api.query;
-        let kv =[]; 
-        if(Array.isArray(params)){
-          params.forEach(param=>{
-            kv.push(param.name + param.condition + controller.vars[param.var_name]);
-          })
-        }else if(typeof(params)==="object"){
-          kv.push(params.name + params.condition + controller.vars[params.var_name]);
-        }
-        queryString = kv.join("&");
+      //外部apiを呼出
+      if(script.after.api){
+        let api = script.after.api;
+        let queryString = getQueryString(api);
+        getFromAPI(api, queryString, callBackAPI);
       }
-      
-      getFromAPI(api, queryString, (result)=>{
-        if(result.Response){
-          const textTempalte =api.callback.text;
-          const text =  Mustache.render(textTempalte, result);
-          result.renderText = text;
 
-          // convo.setVar(api.callback.result_name, result);
-          // convo.setVar(api.callback.detail_name, result.renderText);
-          controller.vars[api.callback.result_name] = result;
-          controller.vars[api.callback.detail_name] = result.renderText;
-        }
-      });
-
+      //Triggerがある場合
+      if(script.after.trigger){
+        controller.trigger(script.after.trigger, bot, results);
+      }
     });
   }
+  async function callBackAPI(result){
+    if(result.Response){
+      const textTempalte =api.callback.text;
+      const text =  Mustache.render(textTempalte, result);
+      result.renderText = text;
 
+      controller.vars[api.callback.result_name] = result;
+      controller.vars[api.callback.detail_name] = result.renderText;
+    }
+  }
+  
   async function onVarChange(convo, key){
     if("string" === typeof(key)){
       convo.onChange(key, async(response, convo, bot)=>{

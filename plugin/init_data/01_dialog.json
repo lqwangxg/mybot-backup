@@ -375,7 +375,10 @@
           }
         ]
       },
-      "thread_name":"question_content"
+      "thread_name":"question_content",
+      "after":{
+        "trigger":"SaveUserProfie"
+      }
     },
     { 
       "type": "action",
@@ -412,12 +415,6 @@
       "action":"question_content",
       "thread_name": "question_all_confirm",
       "comment":"=====電話番号入力後、問合せ情報入力促進======"
-    },
-    { 
-      "type": "action",
-      "action":"SaveUserProfie",
-      "thread_name":"question_content",
-      "comment":"=====姓名入力確認へ======"
     },
     {
       "type": "message", 

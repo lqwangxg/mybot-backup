@@ -41,14 +41,13 @@ module.exports = function(controller) {
     //   }
     // }
  
-    // log incoming messages to the user history
-    controller.middleware.receive.use(function(bot, message, next) {
-        controller.storage.users.get(message.user, function(err, user) {
-            //logMessage(message,user);
-            console.log('message.user====>', message.user);
-        });
-        next();
-    });
+    // // log incoming messages to the user history
+    // controller.middleware.receive.use(function(bot, message, next) {
+    //     controller.storage.users.get(message.user, function(err, user) {
+    //         console.log('message.user====>', message.user);
+    //     });
+    //     next();
+    // });
  
  
     // controller.middleware.format.use(function(bot, message, platform_message, next) {
