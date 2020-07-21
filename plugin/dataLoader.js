@@ -318,7 +318,7 @@ module.exports = async function (controller) {
     if(!script.after){
       return;
     }
-    console.log("addAfter======confirm> :", script)
+    //console.log("addAfter======confirm> :", script)
     
     convo.after((results, bot)=>{
       //外部apiを呼出

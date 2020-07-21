@@ -70,7 +70,7 @@ controller.ready(() => {
       //controller.storage.history = {};
       controller.storage.ensureConnected().then(
         (client)=>{
-          console.log("controller.storage.connect============<client>",client);
+          //console.log("controller.storage.connect============<client>",client);
           controller.storage.db = client.db(controller.storage.config.database);
           require("./service/MongoStorage")(controller);   
         }
