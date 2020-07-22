@@ -53,7 +53,7 @@ async function getFromAPI(api, queryString, callBack) {
     return new Error(`3td API Call failed.${JSON.stringify(api)}`);
   }
   if(callBack){
-    callBack(response.body);
+    callBack(api, response.body);
   }
   return response.body;
 };

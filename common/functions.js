@@ -1,237 +1,258 @@
+"use strict";
+//import { BotkitMessage } from "botkit";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+exports.__esModule = true;
+var utils = require("../service/utils");
 /* This module kicks in if no Botkit Studio token has been provided */
 module.exports = function (controller) {
-  //送受信前に、送受信者を確定
-  controller.fillUserFromBotMessage = async function  (bot, message, usertype) {
-    //該当ユーザー情報が存在する場合、処理終了
-    if(message[usertype])return;
-
-    let localUser = "";
-    if (message.conversation && message.conversation.id) {
-      localUser = message.conversation.id;
-    } else if (message.recipient && message.recipient.id) {
-      localUser = message.recipient.id;
-    } else if (
-      bot._config &&
-      bot._config.reference &&
-      bot._config.reference.user &&
-      bot._config.reference.user.id
-    ) {
-      localUser = bot._config.reference.user.id;
+    var botClients = [];
+    //送受信前に、送受信者を確定
+    function fillUserFromBotMessage(bot, message, usertype) {
+        return __awaiter(this, void 0, void 0, function () {
+            var localUser, reference;
+            return __generator(this, function (_a) {
+                //該当ユーザー情報が存在する場合、処理終了
+                if (message[usertype])
+                    return [2 /*return*/];
+                localUser = "";
+                if (message.conversation && message.conversation.id) {
+                    localUser = message.conversation.id;
+                }
+                else if (message.recipient && message.recipient.id) {
+                    localUser = message.recipient.id;
+                }
+                else if (bot.getConfig('reference')) {
+                    reference = bot.getConfig('reference');
+                    localUser = reference.user.id;
+                }
+                message[usertype] = localUser;
+                if (!message.user) {
+                    message.user = localUser;
+                }
+                return [2 /*return*/];
+            });
+        });
     }
-    message[usertype] = localUser;
-    if(!message.user){
-      message.user = localUser;
+    ;
+    //送信メッセージを準備
+    function formatMessage(bot, message) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                //ユーザへの送信メッセージをセンターへ転送
+                if (!message.text) {
+                    message.text = "";
+                }
+                if (!message.data) {
+                    message.data = {};
+                }
+                if (!message.data.text && message.text) {
+                    message.data.text = message.text;
+                }
+                if (message.user && !message.author) {
+                    message.author = message.user;
+                    message.data.author = message.user;
+                }
+                if (!message.data.author) {
+                    if (message.author) {
+                        message.data.author = message.author;
+                    }
+                }
+                if (!message.data.reply_user && message.reply_user) {
+                    message.data.reply_user = message.reply_user;
+                }
+                if (!message.data.group) {
+                    message.data.group = ["bot"];
+                }
+                if (message.data.author &&
+                    !message.data.group.includes(message.data.author)) {
+                    message.data.group.push(message.data.author);
+                }
+                if (message.data.reply_user &&
+                    !message.data.group.includes(message.data.reply_user)) {
+                    message.data.group.push(message.data.reply_user);
+                }
+                if (!message.channelData) {
+                    message.channelData = {};
+                }
+                //データ保存
+                Object.assign(message.channelData, message.data);
+                return [2 /*return*/];
+            });
+        });
     }
-  };
-
-  controller.nowTimeStamp = function(){
-    const event = new Date();
-    let datetimeString = event.toLocaleDateString()+ ' '+ event.toLocaleTimeString()+"."+ event.getMilliseconds();
-    return datetimeString;
-  }
-  //送信メッセージを準備
-  controller.formatMessage = async function (bot, message) {
-    //ユーザへの送信メッセージをセンターへ転送
-    if(!message.text){
-      message.text ="";
+    ;
+    function registUser(bot, message) {
+        return __awaiter(this, void 0, void 0, function () {
+            var client;
+            return __generator(this, function (_a) {
+                if (!message.author)
+                    return [2 /*return*/];
+                client = botClients.find(function (u) { return message.author === u.id; });
+                //保存
+                if (!client) {
+                    client = {
+                        id: message.user,
+                        bot: bot,
+                        context: message.context,
+                        reference: message.reference
+                    };
+                    botClients.push(client);
+                }
+                return [2 /*return*/];
+            });
+        });
     }
-    if (!message.data) {
-      message.data = {};
+    ;
+    function onReceivedMessage(bot, message) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: 
+                    //author存在確認
+                    return [4 /*yield*/, fillUserFromBotMessage(bot, message, "author")];
+                    case 1:
+                        //author存在確認
+                        _a.sent();
+                        //author登録
+                        return [4 /*yield*/, registUser(bot, message)];
+                    case 2:
+                        //author登録
+                        _a.sent();
+                        //メッセージフォーマット
+                        return [4 /*yield*/, formatMessage(bot, message)];
+                    case 3:
+                        //メッセージフォーマット
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
     }
-    if (!message.data.text && message.text) {
-      message.data.text = message.text;
+    ;
+    function transferToMMCMessage(message) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                //転送メッセージの場合、再転送しない
+                if (message.isTranfering)
+                    return [2 /*return*/];
+                //自身へ転送しない
+                if (message.author === process.env.MMC_UID)
+                    return [2 /*return*/];
+                //管理センターへ転送
+                transferMessage(message, process.env.MMC_UID, process.env.MMC_UID);
+                return [2 /*return*/];
+            });
+        });
     }
-    
-    if(message.user && !message.author){
-      message.author = message.user;
-      message.data.author = message.user;
+    ;
+    function transferToUserGroupMessage(message) {
+        return __awaiter(this, void 0, void 0, function () {
+            var selfId;
+            return __generator(this, function (_a) {
+                //転送メッセージの場合、再転送しない
+                if (message.isTranfering)
+                    return [2 /*return*/];
+                if (!message.data.group)
+                    return [2 /*return*/];
+                selfId = message.author;
+                message.data.group.forEach(function (toId) {
+                    //自身に転送しない,chatbotにも転送しない
+                    if (selfId === toId || "bot" === toId || process.env.MMC_UID === toId)
+                        return;
+                    //お客様へ転送
+                    transferMessage(message, toId, 'group');
+                });
+                return [2 /*return*/];
+            });
+        });
     }
-    if (!message.data.author) {
-      if( message.author ){
-        message.data.author = message.author;
-      }
+    ;
+    function transferMessage(message, destId, transferType) {
+        return __awaiter(this, void 0, void 0, function () {
+            var client, newMessage;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        client = botClients.find(function (u) { return destId === u.id; });
+                        if (!client) return [3 /*break*/, 3];
+                        newMessage = {
+                            type: message.type,
+                            text: message.text,
+                            isTranfering: true,
+                            data: message.data,
+                            channelData: {
+                                type: message.type,
+                                text: message.text,
+                                isTranfering: true,
+                                transferType: transferType,
+                                author: message.author,
+                                reply_user: message.reply_user
+                            }
+                        };
+                        return [4 /*yield*/, client.bot.changeContext(client.reference)];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, client.bot.say(newMessage)];
+                    case 2:
+                        _a.sent();
+                        _a.label = 3;
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
     }
-    if (!message.data.reply_user && message.reply_user) {
-      message.data.reply_user = message.reply_user;
-    }   
-    if (!message.data.group) {
-      message.data.group = ["bot"];
+    function saveMessageHistory(bot, message) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if (!controller.storage)
+                    return [2 /*return*/];
+                if (message.id) {
+                    controller.trigger("SaveMessage", bot, message);
+                }
+                else {
+                    // controller.storage.counters.seq(message.author, (error, resp)=>{
+                    //   //let seq = resp;
+                    //   message.id = resp.value.seq;
+                    //   controller.trigger("SaveMessage", bot, message);
+                    // })
+                }
+                return [2 /*return*/];
+            });
+        });
     }
-
-    if (
-      message.data.author &&
-      !message.data.group.includes(message.data.author)
-    ) {
-      message.data.group.push(message.data.author);
-    }
-    if (
-      message.data.reply_user &&
-      !message.data.group.includes(message.data.reply_user)
-    ) {
-      message.data.group.push(message.data.reply_user);
-    }
-    if (!message.channelData) {
-      message.channelData = {};
-    }
-    //データ保存
-    Object.assign(message.channelData, message.data);
-  };
-
-  controller.registUser = async function (bot, message) {
-    if(!message.author)return;
-    let client = controller.botClients.find((u) => message.author === u.id);
-    //保存
-    if (!client) {
-      client = {
-        id: message.user,
-        bot: bot,
-        context: message.context,
-        reference: message.reference,
-      };
-      controller.botClients.push(client);
-    }
-  };
-
-  controller.onReceivedMessage = async function (bot, message) {
-    //author存在確認
-    await controller.fillUserFromBotMessage(bot,message, "author");
-
-    //author登録
-    await controller.registUser(bot, message);
-
-    //メッセージフォーマット
-    await controller.formatMessage(bot, message);
-  };
-
-  //送信メッセージを準備
-  controller.beforeSendingMessage = async function (bot, message) {
-    //送信者を確定
-    await controller.fillUserFromBotMessage(bot, message, "reply_user");
-    //送信内容フォーマット
-    await controller.formatMessage(bot, message);
-  };
-  
-  controller.transferToMMCMessage = async function (message) {
-    //転送メッセージの場合、再転送しない
-    if (message.isTranfering) return;
-    //自身へ転送しない
-    if (message.author === controller.MMC_UID) return;
-    
-    //管理センターへ転送
-    transferMessage(message, controller.MMC_UID, controller.MMC_UID);
-  };
-
-  controller.transferToUserGroupMessage = async function (message) {
-    //転送メッセージの場合、再転送しない
-    if (message.isTranfering ) return;
-    if(!message.data.group)return;
-
-    let selfId = message.author;
-
-    message.data.group.forEach((toId) => {
-      //自身に転送しない,chatbotにも転送しない
-      if (selfId === toId || "bot" === toId || controller.MMC_UID === toId) return;
-      
-      //お客様へ転送
-      transferMessage(message, toId, 'group');
-    });
-  };
-  async function transferMessage (message, destId, transferType) {
-    let client = controller.botClients.find((u) => destId === u.id);
-    if (client) {
-      let newMessage = {
-        type: message.type,
-        text: message.text,
-        isTranfering: true,
-        data: message.data,
-        channelData: {
-          type: message.type,
-          text: message.text,
-          isTranfering: true,
-          transferType: transferType,
-          author: message.author,
-          reply_user: message.reply_user,
-        },
-      };
-
-      await client.bot.changeContext(client.reference);
-      await client.bot.say(newMessage);
-    }
-  }
-  
-  controller.saveMessageHistory = async function (bot, message){
-    if(!controller.storage)return;
-    if(message.id){
-      controller.trigger("SaveMessage", bot, message);
-    }else{
-      controller.storage.counters.seq(message.author, (error, resp)=>{
-        //let seq = resp;
-        message.id = resp.value.seq;
-        controller.trigger("SaveMessage", bot, message);
-      })
-    }
-  }
-
-  controller.on("SaveMessage", async function(bot, message){
-    
-    if(!message.incoming_message){
-      message.incoming_message = {};
-    }
-    let filter = { author: message.author, id: message.id };
-    let content = {
-      type: message.type,
-      text: message.text,
-      data: message.data,
-      author: message.author,
-      timestamp: message.incoming_message.timestamp?message.incoming_message.timestamp: controller.nowTimeStamp()
-    }
-    controller.storage.histories.save(filter, content, (error, resp)=>{
-      if(error){
-        throw error;
-      }
-    });
-  })
-
-  controller.on("SaveUserProfie", async function(bot, message){
-    let filter = { id: message.user};
-    //ユーザ情報存在しない場合、処理終了
-    let user_profile = {}
-    if(message.user_profile){
-      Object.assign(user_profile, message.user_profile);
-    }
-    user_profile.id = "";
-    if(message.user){
-      user_profile.id = message.user;
-    }
-    user_profile.name = "";
-    if(message.username){
-      user_profile.name = message.username;
-    }
-    user_profile.mail = "";
-    if(message.mail && message.mail != "回答無し"){
-      user_profile.mail = message.mail
-    }
-    user_profile.telno = "";
-    if(message.telno && message.telno != "回答無し"){
-      user_profile.telno = message.telno
-    }
-    if(message.channel){
-      user_profile.channel = message.channel;
-    }
-    user_profile.timestamp = controller.nowTimeStamp();
-
-    // let content = {
-    //   name: message.username?message.user_profile.name:message.user_profile.id,
-    //   mail: message.user_profile.mail?message.user_profile.mail:'',
-    //   telno: message.user_profile.telno?message.user_profile.telno:'',
-    //   dispname: message.user_profile.dispname?message.user_profile.dispname:'',
-    //   timestamp: message.user_profile.timestamp?message.user_profile.timestamp: new Date()
-    // }
-
-    controller.storage.users.save(filter, user_profile, (error, resp)=>{
-      if(error){
-        throw error;
-      }
-    });
-  })
 };

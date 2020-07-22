@@ -11,6 +11,7 @@
       "topic": "default",
       "type": "ask", 
       "text": "先ず、お名前を教えていただけませんか？", 
+      "command":"ask:username",
       "quick_replies": [
         {
           "title": "姓名入力",
@@ -56,6 +57,7 @@
     { 
       "type": "question",
       "text":"「姓　名」の形でご入力をお願い致します。例：桃　太郎",
+      "command":"ask:username",
       "collect":{
         "key": "username",
         "options":[
@@ -80,6 +82,7 @@
     {
       "type": "question", 
       "text": "御姓名は「{{vars.username}}」で、間違いないでしょうか?",
+      "command":"confirm:username",
       "quick_replies": [
         {
           "title": "はい",
@@ -113,6 +116,7 @@
     {
       "type": "question", 
       "text": "メールアドレスを教えていただけませんか？",
+      "command":"ask:mail",
       "quick_replies": [
         {
           "title": "回答無し",
@@ -156,6 +160,7 @@
     {
       "type": "question", 
       "text": "メールアドレスは「{{vars.mail}}」で、間違いないでしょうか?",
+      "command":"confirm:mail",
       "quick_replies": [
         {
           "title": "はい",
@@ -197,6 +202,7 @@
         }
       ],
       "text": "お電話番号を教えていただけませんか？",
+      "command":"ask:telno",
       "quick_replies": [
         {
           "title": "回答無し",
@@ -301,6 +307,7 @@
     {
       "type": "message", 
       "text": "「{{vars.username}}」様　ありがとうございました。お客様の個人情報を慎重に扱いさせて頂きます。",
+      "channleData":{ "realname":"{{vars.username}}"},
       "thread_name":"question_content"
     },
     {
