@@ -12,10 +12,23 @@
     ],
     "replys": [
       {
-        "text": "ようこそ！MBPSmartecのボットです。なんでも大丈夫、僕とチャットしましょう！",
+        "text": "ようこそ！いらっしゃいません。"
+      },
+      {
         "file": {
-          "name": "awesome",
-          "url": "https://github.com/lqwangxg/resources/blob/master/gif/happy.gif?raw=true"
+          "name": "ようこそ",
+          "type": "image",
+          "imageUrl":  "https://github.com/lqwangxg/resources/blob/master/gif/happy.gif?raw=true",
+          "url": "https://mbpsmartec.co.jp/ja/"
+        }
+      },
+      {
+        "text": "MBPSmartecのボットです。",
+        "file": {
+          "name": "MBP SMARTEC 株式会社",
+          "desc": "所在地：〒101-0052　東京都千代田区神田小川町３－２２－１６　第三大丸ビル４階  電話：03-6275-0950",
+          "type": "html",
+          "url": "https://mbpsmartec.co.jp/ja/"
         }
       }
     ],
