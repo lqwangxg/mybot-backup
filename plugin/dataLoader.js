@@ -35,17 +35,23 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+exports.__esModule = true;
+var botkit_1 = require("botkit");
 var fs = require("fs");
 var buildPath = require("path");
-var initQADataPath = buildPath.join(__dirname, "init_data");
+var initPath_JSON = buildPath.join(__dirname, "init_data");
 var _a = require("../service/3rdApi"), getFromAPI = _a.getFromAPI, getQueryString = _a.getQueryString;
-var BotkitConversation = require("botkit").BotkitConversation;
 var Mustache = require('mustache');
 module.exports = function (controller) {
     return __awaiter(this, void 0, void 0, function () {
         //====================================================
+        /**
+         * jsonに含まれたadapterは適当かの判定
+         * @param controller
+         * @param json
+         */
         function isValidAdapter(controller, json) {
-            return __awaiter(this, void 0, void 0, function () {
+            return __awaiter(this, void 0, Promise, function () {
                 var isRightAdapter;
                 return __generator(this, function (_a) {
                     isRightAdapter = false;
@@ -134,29 +140,24 @@ module.exports = function (controller) {
                 });
             });
         }
+        /**
+         * hears処理の設定.
+         * １．事前処理として、必須入力チェックにより、未入力変数があれば、入力促進ダイアログを起動させる
+         * ２．必須入力が正常であれば、次の処理へ進む
+         * controller.hears(keywords, events,async function);
+         */
         function AddHearTriggerScript(controller, script) {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     script.keywords = convertToRegex(script.keywords, null);
+                    //hears keywords,
                     controller.hears(script.keywords, script.events, function (bot, message) {
                         return __awaiter(this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         console.log("AddHearTriggerScript: ", script);
-                                        if (!(script.required && script.required.key && script.required.dialog
-                                            && !isRequiredValid(controller, script.required.key))) return [3 /*break*/, 2];
-                                        console.log(" heard message:", message);
-                                        controller.vars.lastMessage = {
-                                            type: message.type,
-                                            text: message.text,
-                                            user: message.user,
-                                            channel: message.channel,
-                                            value: message.value,
-                                            data: { text: message.data.text },
-                                            user_profile: message.user_profile,
-                                            reply_user: message.reply_user
-                                        };
+                                        if (!(script.required && script.required.key && script.required.dialog)) return [3 /*break*/, 2];
                                         return [4 /*yield*/, bot.beginDialog(script.required.dialog)];
                                     case 1:
                                         _a.sent();
@@ -182,14 +183,13 @@ module.exports = function (controller) {
                 });
             });
         }
-        function isRequiredValid(controller, key) {
-            if (Array.isArray(key)) {
-                return key.every(function (key) { return !!controller.vars[key]; });
-            }
-            else {
-                return !!controller.vars[key];
-            }
-        }
+        // function isRequiredValid(controller:Botkit, key){
+        //   if(Array.isArray(key)){
+        //     return key.every(key=> !!controller.vars[key]);
+        //   }else{
+        //     return !!controller.vars[key]
+        //   }
+        // }
         //====================================================
         function dialogFromJson(controller, json) {
             return __awaiter(this, void 0, void 0, function () {
@@ -198,7 +198,7 @@ module.exports = function (controller) {
                     if ("dialog" != json.type || !json.script || !json.id) {
                         return [2 /*return*/];
                     }
-                    convo = new BotkitConversation(json.id, controller);
+                    convo = new botkit_1.BotkitConversation(json.id, controller);
                     json.script.forEach(function (s) { return addScript(convo, s); });
                     controller.addDialog(convo);
                     return [2 /*return*/];
@@ -313,16 +313,26 @@ module.exports = function (controller) {
         }
         function addMessage(convo, script) {
             return __awaiter(this, void 0, void 0, function () {
+                var message;
                 return __generator(this, function (_a) {
                     if ("message" != script.type) {
                         return [2 /*return*/];
                     }
-                    //console.log("addMessage===================> :", confirm)
+                    message = {
+                        type: script.type,
+                        text: script.text,
+                        quick_replies: script.quick_replies,
+                        file: script.file
+                    };
+                    console.log("addMessage===================>", message);
                     if (script.thread_name) {
-                        convo.addMessage(script, script.thread_name);
+                        convo.addMessage(message, script.thread_name);
                     }
                     else {
-                        convo.addMessage(script);
+                        convo.addMessage(message);
+                    }
+                    if (script.next_dialog) {
+                        convo;
                     }
                     return [2 /*return*/];
                 });
@@ -331,24 +341,10 @@ module.exports = function (controller) {
         function addVarValid(script) {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            if ("variables" != script.type) {
-                                return [2 /*return*/];
-                            }
-                            if (!controller.validateHandlers) {
-                                controller.validateHandlers = [];
-                            }
-                            return [4 /*yield*/, convertToRegex(script.valid, function (option) {
-                                    var opt = controller.validateHandlers.includes(option);
-                                    if (!opt) {
-                                        controller.validateHandlers.push(option);
-                                    }
-                                })];
-                        case 1:
-                            _a.sent();
-                            return [2 /*return*/];
+                    if ("variables" != script.type) {
+                        return [2 /*return*/];
                     }
+                    return [2 /*return*/];
                 });
             });
         }
@@ -369,13 +365,9 @@ module.exports = function (controller) {
                         case 1: 
                         //指定Threadへ飛ばす前の処理
                         return [4 /*yield*/, convo.before(script_thread_name, function (convoBefore, bot) { return __awaiter(_this, void 0, void 0, function () {
-                                var varValue, convoVarValue, option;
+                                var varValue, convoVarValue;
                                 return __generator(this, function (_a) {
                                     console.log("before====from=> :", script_thread_name);
-                                    //対応変数がまだない場合、処理しない
-                                    if (controller.vars[before.key]) {
-                                        varValue = controller.vars[before.key];
-                                    }
                                     if (convoBefore.vars[before.key]) {
                                         convoVarValue = convoBefore.vars[before.key];
                                     }
@@ -388,20 +380,6 @@ module.exports = function (controller) {
                                     }
                                     if (convoVarValue.type === "event")
                                         return [2 /*return*/];
-                                    option = controller.validateHandlers.find(function (v) { return v.key === before.key; });
-                                    if (!option)
-                                        return [2 /*return*/];
-                                    //入力チェック正常、かつ飛ばす区分がTrueの場合、before.thread_nameへ
-                                    if (option.type === "regex") {
-                                        if (option.pattern.test(varValue) && before.skip_on_valid) {
-                                            convoBefore.gotoThread(before.thread_name);
-                                        }
-                                    }
-                                    else if (option.type === "string") {
-                                        if (option.pattern === varValue && before.skip_on_valid) {
-                                            convoBefore.gotoThread(before.thread_name);
-                                        }
-                                    }
                                     return [2 /*return*/];
                                 });
                             }); })];
@@ -445,8 +423,8 @@ module.exports = function (controller) {
                         textTempalte = api.callback.text;
                         text = Mustache.render(textTempalte, result);
                         result.renderText = text;
-                        controller.vars[api.callback.result_name] = result;
-                        controller.vars[api.callback.detail_name] = result.renderText;
+                        // controller.vars[api.callback.result_name] = result;
+                        // controller.vars[api.callback.detail_name] = result.renderText;
                     }
                     return [2 /*return*/];
                 });
@@ -458,24 +436,9 @@ module.exports = function (controller) {
                 return __generator(this, function (_a) {
                     if ("string" === typeof (key)) {
                         convo.onChange(key, function (response, convo, bot) { return __awaiter(_this, void 0, void 0, function () {
-                            var value, v;
+                            var value;
                             return __generator(this, function (_a) {
                                 value = response;
-                                v = controller.validateHandlers.find(function (k) { return k.key === key; });
-                                if (v) {
-                                    if (v.pattern.test(value)) {
-                                        controller.vars[key] = value;
-                                    }
-                                    else {
-                                        controller.vars[key] = "";
-                                        convo.gotoThread(v.fault_thread_name);
-                                    }
-                                }
-                                else {
-                                    controller.vars[key] = response;
-                                }
-                                //let kv = 
-                                console.log("onVarChange===================[" + key + "]:[" + controller.vars[key] + "], " + response);
                                 return [2 /*return*/];
                             });
                         }); });
@@ -568,34 +531,28 @@ module.exports = function (controller) {
             });
         }
         return __generator(this, function (_a) {
-            if (!controller.vars) {
-                controller.vars = {};
-            }
-            // type optionType =
-            // {
-            //   type: "string"|"regex",
-            //   pattern: string | RegExp,
-            //   thread_name?:string 
-            // } | Array<optionType>;
+            // if(!controller.vars){
+            //   controller.vars = {};
+            // }
             //====================================================
-            fs.readdirSync(initQADataPath).forEach(function (file) {
-                var filePath = buildPath.join(initQADataPath, file);
-                console.log("filePath:", filePath);
+            fs.readdirSync(initPath_JSON).forEach(function (file) {
+                var filePath = buildPath.join(initPath_JSON, file);
+                console.log("datafile:", filePath);
+                //JSONデータ読取り、
                 fs.readFile(filePath, function (err, data) {
                     if (err) {
                         console.log(err);
+                        return;
                     }
-                    else {
-                        var json = JSON.parse(data);
-                        var isRightAdapter = isValidAdapter(controller, json);
-                        if (isRightAdapter) {
-                            // init trigger on
-                            triggerOnFromJson(controller, json);
-                            // init trigger hears
-                            hearsFromJson(controller, json);
-                            // init dialog 
-                            dialogFromJson(controller, json);
-                        }
+                    var json = JSON.parse(data);
+                    var isRightAdapter = isValidAdapter(controller, json);
+                    if (isRightAdapter) {
+                        // init trigger on
+                        triggerOnFromJson(controller, json);
+                        // init trigger hears
+                        hearsFromJson(controller, json);
+                        // init dialog 
+                        dialogFromJson(controller, json);
                     }
                 });
             });

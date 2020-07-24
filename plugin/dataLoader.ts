@@ -1,50 +1,52 @@
 'use strict';
 
+import { Botkit, BotkitConversation, BotkitMessage, BotWorker } from "botkit";
+
 let fs = require("fs");
 let buildPath = require("path");
-let initQADataPath = buildPath.join(__dirname, "init_data");
+let initPath_JSON = buildPath.join(__dirname, "init_data");
 const {getFromAPI, getQueryString} = require("../service/3rdApi");
-const { BotkitConversation } = require("botkit");
 const Mustache = require('mustache');
 
-module.exports = async function (controller) {
-  if(!controller.vars){
-    controller.vars = {};
-  }
+module.exports = async function (controller: Botkit) {
+  // if(!controller.vars){
+  //   controller.vars = {};
+  // }
   
-  // type optionType =
-  // {
-  //   type: "string"|"regex",
-  //   pattern: string | RegExp,
-  //   thread_name?:string 
-  // } | Array<optionType>;
-
   //====================================================
-  fs.readdirSync(initQADataPath).forEach((file) => {
-    var filePath = buildPath.join(initQADataPath, file);
-    console.log("filePath:", filePath);
-
+  fs.readdirSync(initPath_JSON).forEach((file : string) => {
+    var filePath :string = buildPath.join(initPath_JSON, file);
+    console.log("datafile:", filePath);
+    
+    //JSONデータ読取り、
     fs.readFile(filePath, (err, data) => {
       if (err){
         console.log(err);
-      }else {
-        var json = JSON.parse(data);
-        let isRightAdapter = isValidAdapter(controller, json);
-        if(isRightAdapter){
-          // init trigger on
-          triggerOnFromJson(controller, json);
-
-          // init trigger hears
-          hearsFromJson(controller, json);
-
-          // init dialog 
-          dialogFromJson(controller, json);
-        }
+        return;
       }
+      
+      var json = JSON.parse(data);
+      let isRightAdapter = isValidAdapter(controller, json);
+      if(isRightAdapter){
+        // init trigger on
+        triggerOnFromJson(controller, json);
+
+        // init trigger hears
+        hearsFromJson(controller, json);
+
+        // init dialog 
+        dialogFromJson(controller, json);
+      }
+    
     })
   });
   //====================================================
-  async function isValidAdapter(controller, json){
+  /**
+   * jsonに含まれたadapterは適当かの判定
+   * @param controller 
+   * @param json 
+   */
+  async function isValidAdapter(controller: Botkit, json: {adapter?:"string"|Array<string>}): Promise<boolean>{
     //your code using json object
     var isRightAdapter = false;
     if(json.adapter){
@@ -65,7 +67,7 @@ module.exports = async function (controller) {
     return isRightAdapter;
   }
   //====================================================
-  async function triggerOnFromJson(controller, json){
+  async function triggerOnFromJson(controller:Botkit, json: {type:"on",script:any}){
     if("on" != json.type || !json.script){
       return;
     }
@@ -77,8 +79,8 @@ module.exports = async function (controller) {
     }
   }
 
-  async function AddOnTriggerScript(controller, script){
-    controller.on(script.events, async function(bot, message) {
+  async function AddOnTriggerScript(controller:Botkit, script){
+    controller.on(script.events, async function(bot:BotWorker, message) {
       console.log("On Trigger Script received, ★reply=====>: ", script);
       if(script.replys){
         await replyMessage(bot, message, script.replys);
@@ -89,7 +91,7 @@ module.exports = async function (controller) {
     });
   }
   //====================================================
-  async function hearsFromJson(controller, json){
+  async function hearsFromJson(controller:Botkit, json: {type:"hears",script:any}){
     if("hears" != json.type || !json.script){
       return;
     }
@@ -101,45 +103,43 @@ module.exports = async function (controller) {
     }
   }
 
-  async function AddHearTriggerScript(controller, script){
+  /** 
+   * hears処理の設定.
+   * １．事前処理として、必須入力チェックにより、未入力変数があれば、入力促進ダイアログを起動させる
+   * ２．必須入力が正常であれば、次の処理へ進む
+   * controller.hears(keywords, events,async function);
+   */
+  async function AddHearTriggerScript(controller:Botkit, script){
     script.keywords = convertToRegex(script.keywords, null);
+    //hears keywords,
     controller.hears(script.keywords, script.events, async function(bot, message) {
       console.log("AddHearTriggerScript: ", script);
-      if(script.required && script.required.key && script.required.dialog 
-        && !isRequiredValid(controller, script.required.key)){
-        console.log(" heard message:", message);
-        controller.vars.lastMessage = {
-          type: message.type,
-          text: message.text,
-          user: message.user,
-          channel: message.channel,
-          value: message.value,
-          data: {text: message.data.text},
-          user_profile: message.user_profile,
-          reply_user: message.reply_user 
-        };
-        
+      
+      //事前処理として、必須入力キーが存在し、確認ダイアログが存在する場合、ダイアログを起動させる
+      if(script.required && script.required.key && script.required.dialog){
         await bot.beginDialog(script.required.dialog);
         return;
       }
 
+      //必須入力OKの場合、次へ進む
       if(script.replys){
         await replyMessage(bot, message, script.replys);
       }
+      //関連ダイアログがあれば、起動させる
       if(script.dialog){
         await bot.beginDialog(script.dialog);
       }
     });
   }
-  function isRequiredValid(controller, key){
-    if(Array.isArray(key)){
-      return key.every(key=> !!controller.vars[key]);
-    }else{
-      return !!controller.vars[key]
-    }
-  }
+  // function isRequiredValid(controller:Botkit, key){
+  //   if(Array.isArray(key)){
+  //     return key.every(key=> !!controller.vars[key]);
+  //   }else{
+  //     return !!controller.vars[key]
+  //   }
+  // }
   //====================================================
-  async function dialogFromJson(controller, json){
+  async function dialogFromJson(controller:Botkit, json){
     if("dialog" != json.type || !json.script || !json.id){
       return;
     }
@@ -221,25 +221,35 @@ module.exports = async function (controller) {
     }
     
     //console.log("addMessage===================> :", confirm)
+    let message = {
+      type: script.type,
+      text: script.text,
+      quick_replies: script.quick_replies,
+      file: script.file
+    }
+    console.log("addMessage===================>",message);
     if(script.thread_name){
-      convo.addMessage(script, script.thread_name);
+      convo.addMessage(message, script.thread_name);
     }else{
-      convo.addMessage(script);
+      convo.addMessage(message);
+    }
+    if(script.next_dialog){
+      convo
     }
   }
   async function addVarValid(script){
     if("variables" != script.type){
       return;
     }
-    if(!controller.validateHandlers){
-      controller.validateHandlers =[];
-    }
-    await convertToRegex(script.valid, (option)=>{
-      let opt = controller.validateHandlers.includes(option);
-      if(!opt){
-        controller.validateHandlers.push(option);
-      }
-    });
+    // if(!controller.validateHandlers){
+    //   controller.validateHandlers =[];
+    // }
+    // await convertToRegex(script.valid, (option)=>{
+    //   let opt = controller.validateHandlers.includes(option);
+    //   if(!opt){
+    //     controller.validateHandlers.push(option);
+    //   }
+    // });
     
   }
   
@@ -258,10 +268,10 @@ module.exports = async function (controller) {
     
         console.log("before====from=> :", script_thread_name)
         let varValue;
-        //対応変数がまだない場合、処理しない
-        if(controller.vars[before.key]){
-          varValue = controller.vars[before.key];
-        }
+        // //対応変数がまだない場合、処理しない
+        // if(controller.vars[before.key]){
+        //   varValue = controller.vars[before.key];
+        // }
         let convoVarValue;
         if(convoBefore.vars[before.key]){
           convoVarValue = convoBefore.vars[before.key];
@@ -275,19 +285,19 @@ module.exports = async function (controller) {
         }
         if(convoVarValue.type==="event")return;
         
-        let option = controller.validateHandlers.find(v => v.key===before.key);
-        if(!option)return;
+        // let option = controller.validateHandlers.find(v => v.key===before.key);
+        // if(!option)return;
         
-        //入力チェック正常、かつ飛ばす区分がTrueの場合、before.thread_nameへ
-        if(option.type==="regex"){
-          if(option.pattern.test(varValue) && before.skip_on_valid){
-            convoBefore.gotoThread(before.thread_name);
-          }
-        }else if(option.type==="string"){
-          if(option.pattern === varValue && before.skip_on_valid){
-            convoBefore.gotoThread(before.thread_name);
-          }
-        }
+        // //入力チェック正常、かつ飛ばす区分がTrueの場合、before.thread_nameへ
+        // if(option.type==="regex"){
+        //   if(option.pattern.test(varValue) && before.skip_on_valid){
+        //     convoBefore.gotoThread(before.thread_name);
+        //   }
+        // }else if(option.type==="string"){
+        //   if(option.pattern === varValue && before.skip_on_valid){
+        //     convoBefore.gotoThread(before.thread_name);
+        //   }
+        // }
       });
     }
   }
@@ -318,8 +328,8 @@ module.exports = async function (controller) {
       const text =  Mustache.render(textTempalte, result);
       result.renderText = text;
 
-      controller.vars[api.callback.result_name] = result;
-      controller.vars[api.callback.detail_name] = result.renderText;
+      // controller.vars[api.callback.result_name] = result;
+      // controller.vars[api.callback.detail_name] = result.renderText;
     }
   }
   
@@ -327,19 +337,19 @@ module.exports = async function (controller) {
     if("string" === typeof(key)){
       convo.onChange(key, async(response, convo, bot)=>{
         let value = response;
-        let v = controller.validateHandlers.find(k=>k.key===key);
-        if(v){
-          if(v.pattern.test(value)){
-            controller.vars[key] =value;
-          }else{
-            controller.vars[key] ="";
-            convo.gotoThread(v.fault_thread_name);
-          }
-        }else{
-          controller.vars[key] = response;
-        }
-        //let kv = 
-        console.log(`onVarChange===================[${key}]:[${controller.vars[key]}], ${response}`);
+        // let v = controller.validateHandlers.find(k=>k.key===key);
+        // if(v){
+        //   if(v.pattern.test(value)){
+        //     controller.vars[key] =value;
+        //   }else{
+        //     controller.vars[key] ="";
+        //     convo.gotoThread(v.fault_thread_name);
+        //   }
+        // }else{
+        //   controller.vars[key] = response;
+        // }
+        // //let kv = 
+        // console.log(`onVarChange===================[${key}]:[${controller.vars[key]}], ${response}`);
       });
     }else if(Array.isArray(key)){
       key.forEach(k => onVarChange(convo, k));

@@ -13,7 +13,7 @@ module.exports = function(controller: Botkit) {
     
     //受信メッセージより、受信者を確定
     //comFunc.onReceivedMessage(bot:BotWorker, message: BotkitMessage);
-    console.log("receive message------>",message, UtilsService.nowTimeStamp());
+    //console.log("receive message------>",message, UtilsService.nowTimeStamp());
    
     // //情報転送
     // if(message.author != controller.MMC_UID){
@@ -38,7 +38,7 @@ module.exports = function(controller: Botkit) {
       message.type="message";
     }
 
-    console.log("send message------>",message);
+    //console.log("send message------>",message);
     next();
 
     //==============================================

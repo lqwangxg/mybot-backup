@@ -1,0 +1,222 @@
+{
+  "adapter": [
+    "default",
+    "Web Adapter"
+  ],
+  "description": "お客様情報を取得用ダイアログ",
+  "type": "dialog",
+  "id": "dialog_help",
+  "script": [
+    {
+      "type": "question",
+      "text": "今回、「{{vars.username}}」様のお問い合わせ内容は何でしょうか?",
+      "quick_replies": [
+        {
+          "title": "会社案内",
+          "payload": "会社案内"
+        },
+        {
+          "title": "SIサービス",
+          "payload": "SIサービス"
+        },
+        {
+          "title": "ソリューション",
+          "payload": "ソリューション"
+        },
+        {
+          "title": "製品",
+          "payload": "製品"
+        },
+        {
+          "title": "ニュース",
+          "payload": "ニュース"
+        },
+        {
+          "title": "採用情報",
+          "payload": "採用情報"
+        },
+        {
+          "title": "その他要件",
+          "payload": "その他要件"
+        }
+      ],
+      "collect": {
+        "key": "question_content",
+        "options": [
+          {
+            "type": "string",
+            "pattern": "会社案内",
+            "thread_name": "content_company"
+          },
+          {
+            "type": "string",
+            "pattern": "SIサービス",
+            "thread_name": "content_si"
+          },
+          {
+            "type": "string",
+            "pattern": "ソリューション",
+            "thread_name": "content_solution"
+          },
+          {
+            "type": "string",
+            "pattern": "製品",
+            "thread_name": "content_product"
+          },
+          {
+            "type": "string",
+            "pattern": "ニュース",
+            "thread_name": "content_news"
+          },
+          {
+            "type": "string",
+            "pattern": "採用情報",
+            "thread_name": "content_recruit"
+          },
+          {
+            "default": "true",
+            "pattern": "default"
+          }
+        ]
+      },
+      "thread_name": "question_content",
+      "after": {
+        "trigger": "SaveUserProfie"
+      }
+    },
+    {
+      "type": "action",
+      "action": "question_username_confirm",
+      "thread_name": "question_username",
+      "comment": "=====姓名入力確認へ======"
+    },
+    {
+      "type": "action",
+      "action": "question_mail",
+      "thread_name": "question_username_confirm",
+      "comment": "=====姓名入力確認後、メール入力促進======"
+    },
+    {
+      "type": "action",
+      "action": "question_mail_confirm",
+      "thread_name": "question_mail",
+      "comment": "=====メール入力後、メール入力確認======"
+    },
+    {
+      "type": "action",
+      "action": "question_telno",
+      "thread_name": "question_mail_confirm",
+      "comment": "=====メール入力確認後、電話番号入力促進======"
+    },
+    {
+      "type": "action",
+      "action": "question_all_confirm",
+      "thread_name": "question_telno",
+      "comment": "=====電話番号入力後、全情報入力確認======"
+    },
+    {
+      "type": "action",
+      "action": "question_content",
+      "thread_name": "question_all_confirm",
+      "comment": "=====電話番号入力後、問合せ情報入力促進======"
+    },
+    {
+      "type": "message",
+      "text": "MBP SMARTEC株式会社",
+      "file": {
+        "name": "MBP SMARTEC 株式会社",
+        "desc": [
+          "MBP SMARTEC 株式会社",
+          "〒101-0052　東京都千代田区神田小川町３－２２－１６　第三大丸ビル４階",
+          "Tel：03-6275-0950"
+        ],
+        "type": "html",
+        "url": "https://mbpsmartec.co.jp/ja/"
+      },
+      "thread_name": "content_company"
+    },
+    {
+      "type": "message",
+      "text": "IMバージョンアップ案件をご紹介致します。",
+      "file": {
+        "name": "IMバージョンアップ案件紹介",
+        "desc": [
+          "日本・中国ともに intra-mart に精通した技術者を豊富に揃えております。",
+          "intra-mart 構築の数多い経験から蓄積された、システム開発・運用ノウハウと中国オフショア開発のメリットを、幅広くお客様にご提供します。",
+          "※ intra-martとは、(株)NTTデータ　イントラマート社によるシステム基盤型ワークフロー製品です"
+        ],
+        "url": "http://112.126.67.102:30006/si-service/",
+        "imageUrl": "http://112.126.67.102:30006/wp-content/uploads/2020/06/intramart.png"
+      },
+      "thread_name": "content_si"
+    },
+    {
+      "type": "message",
+      "text": "ビッグデータソリューション",
+      "file": {
+        "name": "ビッグデータソリューション紹介",
+        "desc": [
+          "MBP Smartecは、CPS/IoT社会が実現する運用ソリューションの、ビッグデータ処理及びIn-Memroy Data Grid技術を活用するMPP(超並列処理)ソリューションサービスを提供いたします。",
+          "モバイル化による計算機利用機会の拡大や様々な機器自体のスマート化の進展によりますます大量/多様/複雑なデータが生み出されている現在、オープンソースをベースとした先進技術により超大量データの蓄積/処理/運用の実用化が進み、これに基づく新たなソリューションやサービスが次々と創出されています。"
+        ],
+        "url": "http://112.126.67.102:30006/solution/",
+        "imageUrl": "http://112.126.67.102:30006/wp-content/uploads/2020/06/solution_example.png"
+      },
+      "thread_name": "content_solution"
+    },
+    {
+      "type": "message",
+      "text": "１週間IOT導入・デモケース事例",
+      "file": {
+        "name": "１週間IOT導入・デモケース事例",
+        "desc": [
+          "1.お申込み",
+          "2.DPU接続",
+          "3.初期設定",
+          "4.可視化画面作成",
+          "5.ご利用開始"
+        ],
+        "url": "http://112.126.67.102:30006/product/",
+        "imageUrl": "http://112.126.67.102:30006/wp-content/uploads/2020/06/iotexample.png"
+      },
+      "thread_name": "content_product"
+    },
+    {
+      "type": "message",
+      "text": "MBPSの最新ニュース",
+      "file": {
+        "name": "MBPSの最新ニュース",
+        "desc": [
+          "2020/07/01 ホームページ内容をリニューアルしました。",
+          "2019/10/26 NTTデータ　イントラマート　社　EWSに出展しました。",
+          "2019/07/30 中国の先進デジタルソリューションの日本市場展開を目的に 中国TIZAグループの戦略子会社「MBP SMARTEC株式会社」に資本参加"
+        ],
+        "url": "http://112.126.67.102:30006/news/"
+      },
+      "thread_name": "content_news"
+    },
+    {
+      "type": "message",
+      "text": "採用情報・募集要項",
+      "file": {
+        "name": "ソリューション営業職を募集中",
+        "desc": [
+          "ソリューション営業職を募集中",
+          "お客様が抱える課題を解決するソリューションの提案型営業。",
+          "当社ならではのリソースを生かし、お客様に最適なシステムソリューションやアウトソーシングサービスなどの一括受注を提案していただきます。",
+          "募集カテゴリ:中途",
+          "求める経験・スキル:※前職の経験業界や経験職種は一切問いません。",
+          "・ITメーカー、SIベンダー、ソフトウエアハウスなどでの営業経験",
+          "・ソリューション営業の経験をお持ちの方、歓迎",
+          "雇用形態:正社員 (原則として、入社後3か月間は試用期間となります。)"
+        ],
+        "url": "http://112.126.67.102:30006/recruitments/"
+      },
+      "thread_name": "content_recruit"
+    },
+    {
+      "type": "message",
+      "text": "お問い合わせ内容「{{question_content}}」に只今調べます、少々お待ち下さい"
+    }
+  ]
+}

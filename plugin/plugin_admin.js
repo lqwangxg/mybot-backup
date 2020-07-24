@@ -47,7 +47,7 @@ module.exports = function (controller) {
         //controller.redis.test(message.author);
         //受信メッセージより、受信者を確定
         //comFunc.onReceivedMessage(bot:BotWorker, message: BotkitMessage);
-        console.log("receive message------>", message, UtilsService.nowTimeStamp());
+        //console.log("receive message------>",message, UtilsService.nowTimeStamp());
         // //情報転送
         // if(message.author != controller.MMC_UID){
         //   //管理センターへ転送
@@ -67,7 +67,7 @@ module.exports = function (controller) {
         if (message.type === "ask" || message.type === "question") {
             message.type = "message";
         }
-        console.log("send message------>", message);
+        //console.log("send message------>",message);
         next();
         //==============================================
         //２，受信者はMMCではなく、転送メッセージでもない場合、MMCへ転送

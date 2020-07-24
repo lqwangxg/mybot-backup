@@ -26,7 +26,7 @@
         "text": "MBPSmartecのボットです。",
         "file": {
           "name": "MBP SMARTEC 株式会社",
-          "desc": "所在地：〒101-0052　東京都千代田区神田小川町３－２２－１６　第三大丸ビル４階  電話：03-6275-0950",
+          "desc": ["MBP SMARTEC 株式会社", "〒101-0052　東京都千代田区神田小川町３－２２－１６　第三大丸ビル４階","Tel：03-6275-0950"],
           "type": "html",
           "url": "https://mbpsmartec.co.jp/ja/"
         }
