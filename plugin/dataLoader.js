@@ -51,50 +51,57 @@ module.exports = function (controller) {
          * @param json
          */
         function isValidAdapter(controller, json) {
-            return __awaiter(this, void 0, Promise, function () {
-                var isRightAdapter;
-                return __generator(this, function (_a) {
-                    isRightAdapter = false;
-                    if (json.adapter) {
-                        if (Array.isArray(json.adapter)) {
-                            if (json.adapter.includes("default")) {
-                                isRightAdapter = true;
-                            }
-                            else if (json.adapter.includes(controller.adapter.name)) {
-                                isRightAdapter = true;
-                            }
-                        }
-                        else if ("string" === typeof (json.adapter)) {
-                            if (json.adapter === controller.adapter.name) {
-                                isRightAdapter = true;
-                            }
-                        }
-                    }
-                    else {
+            //your code using json object
+            var isRightAdapter = false;
+            if (json.adapter) {
+                if (Array.isArray(json.adapter)) {
+                    if (json.adapter.includes("default")) {
                         isRightAdapter = true;
                     }
-                    return [2 /*return*/, isRightAdapter];
-                });
-            });
+                    else if (json.adapter.includes(controller.adapter.name)) {
+                        isRightAdapter = true;
+                    }
+                }
+                else if ("string" === typeof (json.adapter)) {
+                    if (json.adapter === controller.adapter.name) {
+                        isRightAdapter = true;
+                    }
+                }
+            }
+            else {
+                isRightAdapter = true;
+            }
+            return isRightAdapter;
         }
         //====================================================
-        function triggerOnFromJson(controller, json) {
+        /**
+         * Regist controller.on(event, async function)処理。json.scriptは配列とobjectの２種類が可能
+         * @param controller
+         * @param json
+         */
+        function registOn(controller, json) {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     if ("on" != json.type || !json.script) {
                         return [2 /*return*/];
                     }
+                    //配列または
                     if (Array.isArray(json.script)) {
-                        json.script.forEach(function (script) { return AddOnTriggerScript(controller, script); });
+                        json.script.forEach(function (script) { return onTriggerScript(controller, script); });
                     }
                     else {
-                        AddOnTriggerScript(controller, json.script);
+                        onTriggerScript(controller, json.script);
                     }
                     return [2 /*return*/];
                 });
             });
         }
-        function AddOnTriggerScript(controller, script) {
+        /**
+         * Regist controller.on(event, async function)処理。
+         * @param controller
+         * @param script
+         */
+        function onTriggerScript(controller, script) {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     controller.on(script.events, function (bot, message) {
@@ -124,7 +131,7 @@ module.exports = function (controller) {
             });
         }
         //====================================================
-        function hearsFromJson(controller, json) {
+        function registHears(controller, json) {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     if ("hears" != json.type || !json.script) {
@@ -191,7 +198,7 @@ module.exports = function (controller) {
         //   }
         // }
         //====================================================
-        function dialogFromJson(controller, json) {
+        function registDialog(controller, json) {
             return __awaiter(this, void 0, void 0, function () {
                 var convo;
                 return __generator(this, function (_a) {
@@ -544,15 +551,15 @@ module.exports = function (controller) {
                         console.log(err);
                         return;
                     }
-                    var json = JSON.parse(data);
-                    var isRightAdapter = isValidAdapter(controller, json);
+                    var jsonData = JSON.parse(data);
+                    var isRightAdapter = isValidAdapter(controller, jsonData);
                     if (isRightAdapter) {
                         // init trigger on
-                        triggerOnFromJson(controller, json);
+                        registOn(controller, jsonData);
                         // init trigger hears
-                        hearsFromJson(controller, json);
+                        registHears(controller, jsonData);
                         // init dialog 
-                        dialogFromJson(controller, json);
+                        registDialog(controller, jsonData);
                     }
                 });
             });

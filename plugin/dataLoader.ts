@@ -3,8 +3,8 @@
 import { Botkit, BotkitConversation, BotkitMessage, BotWorker } from "botkit";
 
 let fs = require("fs");
-let buildPath = require("path");
-let initPath_JSON = buildPath.join(__dirname, "init_data");
+const buildPath = require("path");
+const initPath_JSON = buildPath.join(__dirname, "init_data");
 const {getFromAPI, getQueryString} = require("../service/3rdApi");
 const Mustache = require('mustache');
 
@@ -25,17 +25,17 @@ module.exports = async function (controller: Botkit) {
         return;
       }
       
-      var json = JSON.parse(data);
-      let isRightAdapter = isValidAdapter(controller, json);
+      var jsonData = JSON.parse(data);
+      let isRightAdapter = isValidAdapter(controller, jsonData);
       if(isRightAdapter){
         // init trigger on
-        triggerOnFromJson(controller, json);
+        registOn(controller, jsonData);
 
         // init trigger hears
-        hearsFromJson(controller, json);
+        registHears(controller, jsonData);
 
         // init dialog 
-        dialogFromJson(controller, json);
+        registDialog(controller, jsonData);
       }
     
     })
@@ -46,7 +46,7 @@ module.exports = async function (controller: Botkit) {
    * @param controller 
    * @param json 
    */
-  async function isValidAdapter(controller: Botkit, json: {adapter?:"string"|Array<string>}): Promise<boolean>{
+  function isValidAdapter(controller: Botkit, json: {adapter?:"string"|Array<string>}): boolean{
     //your code using json object
     var isRightAdapter = false;
     if(json.adapter){
@@ -67,19 +67,30 @@ module.exports = async function (controller: Botkit) {
     return isRightAdapter;
   }
   //====================================================
-  async function triggerOnFromJson(controller:Botkit, json: {type:"on",script:any}){
+  /**
+   * Regist controller.on(event, async function)処理。json.scriptは配列とobjectの２種類が可能
+   * @param controller 
+   * @param json 
+   */
+  async function registOn(controller:Botkit, json: {type:string, script?:{events:string,replys?:string|{}|Array<{}>, dialog?:string}}){
     if("on" != json.type || !json.script){
       return;
     }
 
+    //配列または
     if(Array.isArray(json.script)){
-      json.script.forEach(script=> AddOnTriggerScript(controller, script));
+      json.script.forEach(script=> onTriggerScript(controller, script));
     }else{
-      AddOnTriggerScript(controller, json.script)
+      onTriggerScript(controller, json.script)
     }
   }
 
-  async function AddOnTriggerScript(controller:Botkit, script){
+  /**
+   * Regist controller.on(event, async function)処理。
+   * @param controller 
+   * @param script 
+   */
+  async function onTriggerScript(controller:Botkit, script:{events:string,replys?:string|{}|Array<{}>, dialog?:string}){
     controller.on(script.events, async function(bot:BotWorker, message) {
       console.log("On Trigger Script received, ★reply=====>: ", script);
       if(script.replys){
@@ -91,7 +102,7 @@ module.exports = async function (controller: Botkit) {
     });
   }
   //====================================================
-  async function hearsFromJson(controller:Botkit, json: {type:"hears",script:any}){
+  async function registHears(controller:Botkit, json: {type:string, script?:{events:string,replys?:string|{}|Array<{}>, dialog?:string}}){
     if("hears" != json.type || !json.script){
       return;
     }
@@ -139,7 +150,7 @@ module.exports = async function (controller: Botkit) {
   //   }
   // }
   //====================================================
-  async function dialogFromJson(controller:Botkit, json){
+  async function registDialog(controller:Botkit, json){
     if("dialog" != json.type || !json.script || !json.id){
       return;
     }
