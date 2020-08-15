@@ -14,7 +14,7 @@
         "message",
         "text"
       ],
-      "required":{
+      "comment:required":{
         "key":["username", "mail", "telno"],
         "dialog":"confirm_userinfo"
       },

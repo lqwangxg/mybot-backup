@@ -43,76 +43,26 @@ module.exports = function (controller) {
     controller.on('message,text', onUnknowMessageReceived);
     function onUnknowMessageReceived(bot, message) {
         return __awaiter(this, void 0, void 0, function () {
-            var ret;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        //管理センターからのメッセージの場合、    
-                        if (message.user === process.env.MMC_UID) {
-                            //admin ->bot -> user
-                            controller.trigger('fallback', bot, message);
-                            return [2 /*return*/];
-                        }
-                        //伝送メッセージを無視
-                        if (message.isTranfering)
-                            return [2 /*return*/];
-                        //伝送メッセージを無視
-                        if (message.channelData && message.channelData.isTranfering)
-                            return [2 /*return*/];
-                        console.log("onUnknowMessageReceived =============>:", message);
-                        return [4 /*yield*/, detectTextIntent([message.text])];
-                    case 1:
-                        ret = _a.sent();
-                        Object.assign(message, ret);
-                        message.actionName = utils.getAction(ret);
-                        message.fulfillmentText = utils.getfulfillmentText(ret);
-                        message.parameters = utils.getParameters(ret);
-                        // GOOGLE DialogFlowより回答が来た場合、ユーザへ返す
-                        if (message.fulfillmentText) {
-                            bot.reply(message, {
-                                reply_user: message.user,
-                                text: message.fulfillmentText,
-                                fulfillmentText: message.fulfillmentText
-                            });
-                            return [2 /*return*/];
-                        }
-                        return [2 /*return*/];
+                //管理センターからのメッセージの場合、    
+                if (message.user === process.env.MMC_UID) {
+                    //admin ->bot -> user
+                    controller.trigger('fallback', bot, message);
+                    return [2 /*return*/];
                 }
-            });
-        });
-    }
-    function onMovieBack(movie, bot, message) {
-        return __awaiter(this, void 0, void 0, function () {
-            var text, jsonBody;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        text = movie.Title + " is a " + movie.Actors + " starer " + movie.Genre + " movie, released in " + movie.Year + ". It was directed by " + movie.Director;
-                        console.log("movie=============:" + JSON.stringify(movie));
-                        console.log("text=============:" + text);
-                        jsonBody = {
-                            text: text,
-                            "fulfillmentText": text,
-                            "payload": {
-                                "google": {
-                                    "expectUserResponse": true,
-                                    "richResponse": {
-                                        "items": [
-                                            {
-                                                "simpleResponse": {
-                                                    "textToSpeech": text
-                                                }
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
-                        };
-                        return [4 /*yield*/, bot.reply(message, jsonBody)];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
+                //伝送メッセージを無視
+                if (message.isTranfering)
+                    return [2 /*return*/];
+                //伝送メッセージを無視
+                if (message.channelData && message.channelData.isTranfering)
+                    return [2 /*return*/];
+                console.log("onUnknowMessageReceived =============>:", message);
+                bot.reply(message, {
+                    reply_user: message.user,
+                    text: "お問い合わせ内容を一旦預かりさせて頂きます。ご連絡情報を頂いた場合、後日こちらよりご連絡させ頂きます。ありがとうございました。",
+                    fulfillmentText: message.fulfillmentText
+                });
+                return [2 /*return*/];
             });
         });
     }

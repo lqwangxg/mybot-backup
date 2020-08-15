@@ -22,60 +22,28 @@ module.exports = function(controller: Botkit) {
 
     console.log(`onUnknowMessageReceived =============>:`, message);
     
-    let ret = await detectTextIntent([message.text]);
+    bot.reply(message, {
+      reply_user: message.user,
+      text: "お問い合わせ内容を一旦預かりさせて頂きます。ご連絡情報を頂いた場合、後日こちらよりご連絡させ頂きます。ありがとうございました。",
+      fulfillmentText: message.fulfillmentText,
+    });
 
-    Object.assign(message, ret);
-    message.actionName = utils.getAction(ret);
-    message.fulfillmentText = utils.getfulfillmentText(ret);
-    message.parameters = utils.getParameters(ret);
+    // let ret = await detectTextIntent([message.text]);
 
-    // GOOGLE DialogFlowより回答が来た場合、ユーザへ返す
-    if(message.fulfillmentText){
-      bot.reply(message, {
-        reply_user: message.user,
-        text: message.fulfillmentText,
-        fulfillmentText: message.fulfillmentText,
-      });
-      return;
-    }
-    // if (message.actionName && message.parameters){
-    //   //映画の情報を取得する
-    //   const title = utils.getParameterValue(message, "movie");
-    //   if(title){
-    //     const movie = await getMovieDetail(title);
-    //     onMovieBack(movie, bot, message);
-    //   }else{
-    //     console.log("unknown===action:", message.actionName);
-    //     controller.trigger('unknown', bot, message);
-    //   }
-    // }else{
-    //   controller.trigger('unknown', bot, message);
+    // Object.assign(message, ret);
+    // message.actionName = utils.getAction(ret);
+    // message.fulfillmentText = utils.getfulfillmentText(ret);
+    // message.parameters = utils.getParameters(ret);
+
+    // // GOOGLE DialogFlowより回答が来た場合、ユーザへ返す
+    // if(message.fulfillmentText){
+    //   bot.reply(message, {
+    //     reply_user: message.user,
+    //     text: message.fulfillmentText,
+    //     fulfillmentText: message.fulfillmentText,
+    //   });
+    //   return;
     // }
-  }
-  
-  async function onMovieBack(movie, bot, message){
-    const text =`${movie.Title} is a ${movie.Actors} starer ${movie.Genre} movie, released in ${movie.Year}. It was directed by ${movie.Director}`;
-    console.log(`movie=============:${JSON.stringify(movie)}`);
-    console.log(`text=============:${text}`);
-    const jsonBody = { 
-      text: text, 
-      "fulfillmentText": text,
-      "payload": {
-        "google": {
-          "expectUserResponse": true,
-          "richResponse": {
-            "items": [
-              {
-                "simpleResponse": {
-                  "textToSpeech": text
-                }
-              }
-            ]
-          }
-        }
-      }
-    };
-    await bot.reply(message, jsonBody);
-  }
+  }  
 
 }
