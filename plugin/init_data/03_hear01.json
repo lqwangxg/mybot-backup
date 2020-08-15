@@ -16,13 +16,8 @@
     ],
     "replys": [
       {
-        "text": "どうぞ、ご用件を聞かせてください。",
-        "file": {
-          "name": "ようこそ",
-          "imageUrl": "https://github.com/lqwangxg/resources/blob/master/gif/happy.gif?raw=true"
-        }
+        "text": "どうぞ、ご用件を聞かせてください。"
       }
-    ],
-    "dialog": "dialog_help"
+    ]
   }
 }
