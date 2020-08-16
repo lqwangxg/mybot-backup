@@ -37,7 +37,7 @@ const controller = new Botkit({
 });
 // クライアント配列
 controller.botClients = [];
-//controller.MMC_UID = process.env.MMC_UID;
+controller.MMC_UID = process.env.MMC_UID;
 
 if (process.env.CMS_URI) {
     controller.usePlugin(new BotkitCMSHelper({

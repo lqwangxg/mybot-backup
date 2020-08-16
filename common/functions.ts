@@ -5,7 +5,7 @@ import { BotWorker, BotkitMessage, Botkit } from "botkit";
 const utils = require("../service/utils");
 
 /* This module kicks in if no Botkit Studio token has been provided */
-module.exports = function (controller: Botkit) {
+module.exports = function (controller: any) {
   let botClients =[];
   //送受信前に、送受信者を確定
   async function fillUserFromBotMessage (bot: BotWorker, message: BotkitMessage, usertype: string) {
