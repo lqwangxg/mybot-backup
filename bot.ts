@@ -14,6 +14,7 @@ const { WebAdapter } = require('botbuilder-adapter-web');
 
 const { MongoDbStorage } = require('botbuilder-storage-mongodb');
 
+const path = require('path');
 // Load process.env values from .env file
 require('dotenv').config();
 
@@ -24,9 +25,7 @@ if (process.env.MONGO_URI) {
     });
 }
 
-
 const adapter = new WebAdapter({});
-
 
 const controller = new Botkit({
     webhook_uri: '/api/messages',
@@ -49,13 +48,13 @@ if (process.env.CMS_URI) {
 // Once the bot has booted up its internal services, you can use them to do stuff.
 controller.ready(() => {
     //共通関数等のロード
-    // var commonPath = require("path").join(__dirname, "common");
+    // var commonPath = path.join(__dirname, "common");
     // require("fs").readdirSync(commonPath).forEach(function(file) {
     //   require("./common/" + file)(controller); 
     // });
-
+    controller.publicFolder('/', path.join(__dirname,'..','public'));
     //load customize plugins
-    var pluginPath = require("path").join(__dirname, "plugin");
+    var pluginPath = path.join(__dirname, "plugin");
     require("fs").readdirSync(pluginPath).forEach(function(file) {
       if(file.match(/\w+\.js/)){
         require("./plugin/" + file)(controller); 
