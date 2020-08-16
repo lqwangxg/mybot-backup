@@ -27,23 +27,6 @@ module.exports = function(controller: Botkit) {
       text: "お問い合わせ内容を一旦預かりさせて頂きます。ご連絡情報を頂いた場合、後日こちらよりご連絡させ頂きます。ありがとうございました。",
       fulfillmentText: message.fulfillmentText,
     });
-
-    // let ret = await detectTextIntent([message.text]);
-
-    // Object.assign(message, ret);
-    // message.actionName = utils.getAction(ret);
-    // message.fulfillmentText = utils.getfulfillmentText(ret);
-    // message.parameters = utils.getParameters(ret);
-
-    // // GOOGLE DialogFlowより回答が来た場合、ユーザへ返す
-    // if(message.fulfillmentText){
-    //   bot.reply(message, {
-    //     reply_user: message.user,
-    //     text: message.fulfillmentText,
-    //     fulfillmentText: message.fulfillmentText,
-    //   });
-    //   return;
-    // }
   }  
 
 }
