@@ -69,53 +69,6 @@ module.exports = function (controller) {
         });
     }
     ;
-    //送信メッセージを準備
-    function formatMessage(bot, message) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                //ユーザへの送信メッセージをセンターへ転送
-                if (!message.text) {
-                    message.text = "";
-                }
-                if (!message.data) {
-                    message.data = {};
-                }
-                if (!message.data.text && message.text) {
-                    message.data.text = message.text;
-                }
-                if (message.user && !message.author) {
-                    message.author = message.user;
-                    message.data.author = message.user;
-                }
-                if (!message.data.author) {
-                    if (message.author) {
-                        message.data.author = message.author;
-                    }
-                }
-                if (!message.data.reply_user && message.reply_user) {
-                    message.data.reply_user = message.reply_user;
-                }
-                if (!message.data.group) {
-                    message.data.group = ["bot"];
-                }
-                if (message.data.author &&
-                    !message.data.group.includes(message.data.author)) {
-                    message.data.group.push(message.data.author);
-                }
-                if (message.data.reply_user &&
-                    !message.data.group.includes(message.data.reply_user)) {
-                    message.data.group.push(message.data.reply_user);
-                }
-                if (!message.channelData) {
-                    message.channelData = {};
-                }
-                //データ保存
-                Object.assign(message.channelData, message.data);
-                return [2 /*return*/];
-            });
-        });
-    }
-    ;
     function registUser(bot, message) {
         return __awaiter(this, void 0, void 0, function () {
             var client;
@@ -133,70 +86,6 @@ module.exports = function (controller) {
                     };
                     botClients.push(client);
                 }
-                return [2 /*return*/];
-            });
-        });
-    }
-    ;
-    function onReceivedMessage(bot, message) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: 
-                    //author存在確認
-                    return [4 /*yield*/, fillUserFromBotMessage(bot, message, "author")];
-                    case 1:
-                        //author存在確認
-                        _a.sent();
-                        //author登録
-                        return [4 /*yield*/, registUser(bot, message)];
-                    case 2:
-                        //author登録
-                        _a.sent();
-                        //メッセージフォーマット
-                        return [4 /*yield*/, formatMessage(bot, message)];
-                    case 3:
-                        //メッセージフォーマット
-                        _a.sent();
-                        return [2 /*return*/];
-                }
-            });
-        });
-    }
-    ;
-    function transferToMMCMessage(message) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                //転送メッセージの場合、再転送しない
-                if (message.isTranfering)
-                    return [2 /*return*/];
-                //自身へ転送しない
-                if (message.author === process.env.MMC_UID)
-                    return [2 /*return*/];
-                //管理センターへ転送
-                transferMessage(message, process.env.MMC_UID, process.env.MMC_UID);
-                return [2 /*return*/];
-            });
-        });
-    }
-    ;
-    function transferToUserGroupMessage(message) {
-        return __awaiter(this, void 0, void 0, function () {
-            var selfId;
-            return __generator(this, function (_a) {
-                //転送メッセージの場合、再転送しない
-                if (message.isTranfering)
-                    return [2 /*return*/];
-                if (!message.data.group)
-                    return [2 /*return*/];
-                selfId = message.author;
-                message.data.group.forEach(function (toId) {
-                    //自身に転送しない,chatbotにも転送しない
-                    if (selfId === toId || "bot" === toId || process.env.MMC_UID === toId)
-                        return;
-                    //お客様へ転送
-                    transferMessage(message, toId, 'group');
-                });
                 return [2 /*return*/];
             });
         });
@@ -243,13 +132,6 @@ module.exports = function (controller) {
                     return [2 /*return*/];
                 if (message.id) {
                     controller.trigger("SaveMessage", bot, message);
-                }
-                else {
-                    // controller.storage.counters.seq(message.author, (error, resp)=>{
-                    //   //let seq = resp;
-                    //   message.id = resp.value.seq;
-                    //   controller.trigger("SaveMessage", bot, message);
-                    // })
                 }
                 return [2 /*return*/];
             });

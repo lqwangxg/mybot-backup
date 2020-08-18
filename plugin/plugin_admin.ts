@@ -3,19 +3,19 @@ const UtilsService = require("../service/utils");
 
 module.exports = function(controller: any) {
 
-  controller.middleware.receive.use(async function(bot:BotWorker, message: BotkitMessage, next) {
-    //送信者は必須項目、送信者不明の場合、警告ログを出力し、メッセージを破棄
-    if(!message.author) {
-      console.warn("送信者不明のメッセージが届いた、", message);
+  controller.middleware.receive.use(function(bot:BotWorker, message: BotkitMessage, next) {
+    //if the sender of message.user is null, omit the message.
+    if(!message.user) {
+      console.warn("送信者不明のメッセージが届いた、破棄されています。", message);
       return;
     }
-    //controller.redis.test(message.author);
     
     //受信メッセージより、受信者を確定
     formatReceiveMessage(bot, message);
+    //if it's a new guest id, save the id into userlist 
     registUser(bot,message);
-    //comFunc.onReceivedMessage(bot, message);
-    console.log("receive message------>",message, UtilsService.nowTimeStamp());
+    
+    console.log("receive message------>", UtilsService.nowTimeStamp(), message);
     
     //情報転送
     if(message.author != controller.MMC_UID){
@@ -28,6 +28,12 @@ module.exports = function(controller: any) {
     next();
     
   });
+
+  /**
+   * 
+   * @param bot 
+   * @param message 
+   */
   function formatReceiveMessage (bot: BotWorker, message: BotkitMessage) {
     let localUser = "";
     if (message.conversation && message.conversation.id) {
@@ -45,6 +51,11 @@ module.exports = function(controller: any) {
     //bot.controller.dialogSet.find("")
   };
   
+  /**
+   * 
+   * @param bot 
+   * @param message 
+   */
   async function registUser(bot, message) {
     if(!message.author)return;
     let client = bot.controller.botClients.find((u) => message.author === u.id);
@@ -59,9 +70,11 @@ module.exports = function(controller: any) {
       bot.controller.botClients.push(client);
     }
   };
+
   async function transferToMMCMessage(bot,message) {
     //転送メッセージの場合、再転送しない
     if (message.isTranfering) return;
+
     //自身へ転送しない
     if (message.author === process.env.MMC_UID) return;
     
@@ -94,72 +107,48 @@ module.exports = function(controller: any) {
   async function transferToUserMessage(bot, message) {
     //転送メッセージの場合、再転送しない
     if (message.isTranfering ) return;
-    if(!message.data.group)return;
 
-    let selfId = message.author;
+    // if(!message.data.group)return;
+    // let selfId = message.author;
 
-    message.data.group.forEach((toId) => {
-      //自身に転送しない,chatbotにも転送しない
-      if (selfId === toId || "bot" === toId || process.env.MMC_UID === toId) return;
+    // message.data.group.forEach((toId) => {
+    //   //自身に転送しない,chatbotにも転送しない
+    //   if (selfId === toId || "bot" === toId || process.env.MMC_UID === toId) return;
       
-      //お客様へ転送
-      transferMessage(bot, message, toId, 'group');
-    });
+    //   //お客様へ転送
+    //   transferMessage(bot, message, toId, 'group');
+    // });
   };
-  //送信メッセージを準備
-  async function formatMessage(bot, message) {
-    //ユーザへの送信メッセージをセンターへ転送
-    if(!message.text){
-      message.text ="";
-    }
-    if (!message.data) {
-      message.data = {};
-    }
-    if (!message.data.text && message.text) {
-      message.data.text = message.text;
-    }
-    
-    if(message.user && !message.author){
-      message.author = message.user;
-      message.data.author = message.user;
-    }
-    if (!message.data.author) {
-      if( message.author ){
-        message.data.author = message.author;
-      }
-    }
-    if (!message.data.reply_user && message.reply_user) {
-      message.data.reply_user = message.reply_user;
-    }   
-    if (!message.data.group) {
-      message.data.group = ["bot"];
+
+  /**
+   * Format channelData before message sending.
+   * @param bot 
+   * @param message 
+   */
+  function formatSendMessage(bot, message) {
+    if(message.isTranfering){
+      return;
     }
 
-    if (
-      message.data.author &&
-      !message.data.group.includes(message.data.author)
-    ) {
-      message.data.group.push(message.data.author);
-    }
-    if (
-      message.data.reply_user &&
-      !message.data.group.includes(message.data.reply_user)
-    ) {
-      message.data.group.push(message.data.reply_user);
-    }
     if (!message.channelData) {
       message.channelData = {};
     }
-    //データ保存
-    Object.assign(message.channelData, message.data);
+    
+    if(message.recipient && message.recipient.id){
+      message.channelData.recipient = message.recipient.id;
+    }
+    message.channelData.timestamp = UtilsService.nowTimeStamp();
+    if(message.from && message.from.id){
+      message.channelData.author = message.from.id;
+    }
   };
 
-  controller.middleware.send.use(async function(bot:BotWorker, message: BotkitMessage, next) {
+  controller.middleware.send.use(function(bot:BotWorker, message: BotkitMessage, next) {
     
     //１，内製メッセージ(hello, help等jsonファイルに記載)
     // 内容テキストだけの場合、ユーザ情報等補足が必要
-    await formatMessage(bot, message);
-    //saveMessageHistory(bot:BotWorker, message: BotkitMessage);
+    formatSendMessage(bot, message);
+    
     //messageWoker
     if(message.type==="ask" || message.type ==="question"){
       message.type="message";
@@ -171,7 +160,7 @@ module.exports = function(controller: any) {
     //==============================================
     //２，受信者はMMCではなく、転送メッセージでもない場合、MMCへ転送
     if(message.reply_user != controller.MMC_UID && !message.channelData.isTranfering){
-      await transferToMMCMessage(bot, message);
+      transferToMMCMessage(bot, message);
     }
     
   });

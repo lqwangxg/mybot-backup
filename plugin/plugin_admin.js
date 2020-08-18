@@ -39,33 +39,32 @@ exports.__esModule = true;
 var UtilsService = require("../service/utils");
 module.exports = function (controller) {
     controller.middleware.receive.use(function (bot, message, next) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                //送信者は必須項目、送信者不明の場合、警告ログを出力し、メッセージを破棄
-                if (!message.author) {
-                    console.warn("送信者不明のメッセージが届いた、", message);
-                    return [2 /*return*/];
-                }
-                //controller.redis.test(message.author);
-                //受信メッセージより、受信者を確定
-                formatReceiveMessage(bot, message);
-                registUser(bot, message);
-                //comFunc.onReceivedMessage(bot, message);
-                console.log("receive message------>", message, UtilsService.nowTimeStamp());
-                //情報転送
-                if (message.author != controller.MMC_UID) {
-                    //管理センターへ転送
-                    transferToMMCMessage(bot, message);
-                }
-                else {
-                    //グループへ転送
-                    transferToUserMessage(bot, message);
-                }
-                next();
-                return [2 /*return*/];
-            });
-        });
+        //if the sender of message.user is null, omit the message.
+        if (!message.user) {
+            console.warn("送信者不明のメッセージが届いた、破棄されています。", message);
+            return;
+        }
+        //受信メッセージより、受信者を確定
+        formatReceiveMessage(bot, message);
+        //if it's a new guest id, save the id into userlist 
+        registUser(bot, message);
+        console.log("receive message------>", UtilsService.nowTimeStamp(), message);
+        //情報転送
+        if (message.author != controller.MMC_UID) {
+            //管理センターへ転送
+            transferToMMCMessage(bot, message);
+        }
+        else {
+            //グループへ転送
+            transferToUserMessage(bot, message);
+        }
+        next();
     });
+    /**
+     *
+     * @param bot
+     * @param message
+     */
     function formatReceiveMessage(bot, message) {
         var localUser = "";
         if (message.conversation && message.conversation.id) {
@@ -84,6 +83,11 @@ module.exports = function (controller) {
         //bot.controller.dialogSet.find("")
     }
     ;
+    /**
+     *
+     * @param bot
+     * @param message
+     */
     function registUser(bot, message) {
         return __awaiter(this, void 0, void 0, function () {
             var client;
@@ -157,101 +161,51 @@ module.exports = function (controller) {
     }
     function transferToUserMessage(bot, message) {
         return __awaiter(this, void 0, void 0, function () {
-            var selfId;
             return __generator(this, function (_a) {
                 //転送メッセージの場合、再転送しない
                 if (message.isTranfering)
                     return [2 /*return*/];
-                if (!message.data.group)
-                    return [2 /*return*/];
-                selfId = message.author;
-                message.data.group.forEach(function (toId) {
-                    //自身に転送しない,chatbotにも転送しない
-                    if (selfId === toId || "bot" === toId || process.env.MMC_UID === toId)
-                        return;
-                    //お客様へ転送
-                    transferMessage(bot, message, toId, 'group');
-                });
                 return [2 /*return*/];
             });
         });
     }
     ;
-    //送信メッセージを準備
-    function formatMessage(bot, message) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                //ユーザへの送信メッセージをセンターへ転送
-                if (!message.text) {
-                    message.text = "";
-                }
-                if (!message.data) {
-                    message.data = {};
-                }
-                if (!message.data.text && message.text) {
-                    message.data.text = message.text;
-                }
-                if (message.user && !message.author) {
-                    message.author = message.user;
-                    message.data.author = message.user;
-                }
-                if (!message.data.author) {
-                    if (message.author) {
-                        message.data.author = message.author;
-                    }
-                }
-                if (!message.data.reply_user && message.reply_user) {
-                    message.data.reply_user = message.reply_user;
-                }
-                if (!message.data.group) {
-                    message.data.group = ["bot"];
-                }
-                if (message.data.author &&
-                    !message.data.group.includes(message.data.author)) {
-                    message.data.group.push(message.data.author);
-                }
-                if (message.data.reply_user &&
-                    !message.data.group.includes(message.data.reply_user)) {
-                    message.data.group.push(message.data.reply_user);
-                }
-                if (!message.channelData) {
-                    message.channelData = {};
-                }
-                //データ保存
-                Object.assign(message.channelData, message.data);
-                return [2 /*return*/];
-            });
-        });
+    /**
+     * Format channelData before message sending.
+     * @param bot
+     * @param message
+     */
+    function formatSendMessage(bot, message) {
+        if (message.isTranfering) {
+            return;
+        }
+        if (!message.channelData) {
+            message.channelData = {};
+        }
+        if (message.recipient && message.recipient.id) {
+            message.channelData.recipient = message.recipient.id;
+        }
+        message.channelData.timestamp = UtilsService.nowTimeStamp();
+        if (message.from && message.from.id) {
+            message.channelData.author = message.from.id;
+        }
     }
     ;
     controller.middleware.send.use(function (bot, message, next) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: 
-                    //１，内製メッセージ(hello, help等jsonファイルに記載)
-                    // 内容テキストだけの場合、ユーザ情報等補足が必要
-                    return [4 /*yield*/, formatMessage(bot, message)];
-                    case 1:
-                        //１，内製メッセージ(hello, help等jsonファイルに記載)
-                        // 内容テキストだけの場合、ユーザ情報等補足が必要
-                        _a.sent();
-                        //saveMessageHistory(bot:BotWorker, message: BotkitMessage);
-                        //messageWoker
-                        if (message.type === "ask" || message.type === "question") {
-                            message.type = "message";
-                        }
-                        //console.log("send message------>",message);
-                        next();
-                        if (!(message.reply_user != controller.MMC_UID && !message.channelData.isTranfering)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, transferToMMCMessage(bot, message)];
-                    case 2:
-                        _a.sent();
-                        _a.label = 3;
-                    case 3: return [2 /*return*/];
-                }
-            });
-        });
+        //１，内製メッセージ(hello, help等jsonファイルに記載)
+        // 内容テキストだけの場合、ユーザ情報等補足が必要
+        formatSendMessage(bot, message);
+        //messageWoker
+        if (message.type === "ask" || message.type === "question") {
+            message.type = "message";
+        }
+        //console.log("send message------>",message);
+        next();
+        //==============================================
+        //２，受信者はMMCではなく、転送メッセージでもない場合、MMCへ転送
+        if (message.reply_user != controller.MMC_UID && !message.channelData.isTranfering) {
+            transferToMMCMessage(bot, message);
+        }
     });
     controller.on("SaveMessage", function (bot, message) {
         return __awaiter(this, void 0, void 0, function () {
