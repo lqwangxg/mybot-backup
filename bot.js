@@ -85,7 +85,7 @@ controller.ready(function () {
         }
     });
     // load traditional developer-created local custom feature modules
-    controller.loadModules(__dirname + '/features');
+    // controller.loadModules(__dirname + '/features');
     // load traditional developer-created local custom feature modules
     controller.loadModules(__dirname + '/skills');
     if (controller.storage) {
