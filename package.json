@@ -10,12 +10,12 @@
   },
   "dependencies": {
     "bluebird": "^3.7.2",
-    "botbuilder-adapter-web": "^1.0.8",
+    "botbuilder-adapter-web": "^1.0.9",
     "botbuilder-storage-mongodb": "^0.9.5",
-    "botkit": "^4.9.0",
+    "botkit": "^4.10.0",
     "botkit-plugin-cms": "^1.0.3",
     "dialogflow": "^1.2.0",
     "dotenv": "^7.0.0",
-    "vue": "^2.6.11"
+    "vue": "^2.6.12"
   }
 }
